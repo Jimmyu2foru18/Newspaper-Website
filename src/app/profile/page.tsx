@@ -35,7 +35,7 @@ export default async function ProfilePage() {
       <h1 className="text-3xl font-bold mb-4">My Profile</h1>
       <div className="bg-white p-6 rounded-lg shadow mb-8">
         {user.profile?.avatarUrl && (
-            <img src={user.profile.avatarUrl} alt={user.firstName || "Profile"} className="w-24 h-24 rounded-full object-cover mb-4" />
+            <img src={user.profile.avatarUrl} alt={`${user.firstName} ${user.lastName}`} className="w-24 h-24 rounded-full object-cover mb-4" />
         )}
         <p><strong>Name:</strong> {user?.firstName} {user?.lastName}</p>
         <p><strong>Email:</strong> {user?.email}</p>

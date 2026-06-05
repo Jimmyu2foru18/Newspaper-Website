@@ -11,9 +11,12 @@ export const canManageUser = (
   const targetRoles = target.roles;
   const isTargetAdminOrSuper = targetRoles.includes("ADMIN") || targetRoles.includes("SUPER_ADMIN");
 
-  // Rule 1: Super Admin can manage all, but cannot delete self
+  // Rule 1: Super Admin can manage all, but cannot delete self or other Super Admins
   if (actorRoles.includes("SUPER_ADMIN")) {
-    if (action === "delete" && actor.id === target.id) return false;
+    if (action === "delete") {
+        if (actor.id === target.id) return false;
+        if (targetRoles.includes("SUPER_ADMIN")) return false;
+    }
     return true;
   }
 
