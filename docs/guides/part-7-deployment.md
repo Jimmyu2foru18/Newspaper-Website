@@ -23,4 +23,3 @@ You cannot use the Docker container on your computer for the live site because t
 3. **Deploy:** Click "Deploy." Vercel will build your code and give you a public URL.
 
 ---
-**Congratulations!** You have completed the Old Westbury Catalyst Masterclass. You have successfully built, tested, and deployed a professional full-stack platform from scratch!
