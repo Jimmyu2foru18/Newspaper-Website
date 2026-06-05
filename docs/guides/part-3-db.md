@@ -1,0 +1,34 @@
+# Part 3: The Filing Cabinet (Database)
+
+We use a database to save and retrieve content like articles and user profiles. Think of this as a digital filing cabinet.
+
+### 1. What is Prisma?
+Prisma is our "Librarian." You tell Prisma what you want to save, and it handles the complicated computer-talk to talk to the database (PostgreSQL).
+
+### 2. Defining the Blueprint (`prisma/schema.prisma`)
+Open `prisma/schema.prisma`. This is where you define your data structures.
+- **Model:** A table (e.g., `model User`).
+- **Fields:** The columns in the table (e.g., `email String @unique`).
+- **To Code it:** 
+  1. Open the file.
+  2. Add your model definition inside the brackets.
+  3. Save the file.
+
+### 3. Syncing with the Filing Cabinet
+After you define the blueprint, your computer and the database don't know it yet. You have to "Sync" them.
+- **The Command:**
+  ```bash
+  npx prisma db push
+  ```
+- *Why:* This tells the database: "I've updated the blueprints; please build the new tables."
+
+### 4. Seeding Data
+We don't want an empty library. We want categories (News, Sports) already in there.
+- Look at `prisma/seed.js`.
+- This file runs a simple JavaScript program that inserts these categories into the database automatically.
+- **The Command:**
+  ```bash
+  npx prisma db seed
+  ```
+---
+Now that your filing cabinet is built and organized, let's learn how to secure it in [Part 4: Auth & UI Layout](part-4-auth.md).
