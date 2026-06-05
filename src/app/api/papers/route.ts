@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import prisma from "@/lib/prisma";
+import { canManageContent } from "@/lib/permissions";
 
 function slugify(text: string) {
   return text
@@ -21,6 +22,19 @@ export async function POST(req: Request) {
       return new NextResponse("Unauthorized", { status: 401 });
     }
 
+    const user = await prisma.user.findUnique({
+      where: { id: (session.user as any).id },
+    });
+
+    if (!user) {
+      return new NextResponse("User not found", { status: 404 });
+    }
+
+    // Check if user can create content
+    if (!canManageContent(user, { authorId: user.id }, "create")) {
+        return new NextResponse("Forbidden", { status: 403 });
+    }
+
     const body = await req.json();
     const { title, abstract, content, pdfUrl, citation, categoryId } = body;
 
@@ -29,6 +43,8 @@ export async function POST(req: Request) {
     }
 
     const slug = `${slugify(title)}-${Math.random().toString(36).substring(2, 7)}`;
+
+    const isStudent = user.role === "STUDENT";
 
     const paper = await prisma.researchPaper.create({
       data: {
@@ -39,8 +55,8 @@ export async function POST(req: Request) {
         citation,
         slug,
         categoryId,
-        published: true, // For now auto-publish
-        authorId: (session.user as any).id,
+        published: isStudent ? false : true,
+        authorId: user.id,
       },
     });
 
@@ -50,6 +66,7 @@ export async function POST(req: Request) {
     return new NextResponse("Internal Error", { status: 500 });
   }
 }
+// GET remains the same
 
 export async function GET() {
   try {

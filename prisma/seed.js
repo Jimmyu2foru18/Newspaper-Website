@@ -4,25 +4,25 @@ const bcrypt = require("bcryptjs");
 const prisma = new PrismaClient();
 
 async function main() {
-  const roles = [
-    { role: "ADMIN", email: "admin@oldwestbury.edu" },
-    { role: "EDITOR", email: "editor@oldwestbury.edu" },
-    { role: "FACULTY", email: "faculty@oldwestbury.edu" },
-    { role: "STUDENT", email: "student@oldwestbury.edu" },
-    { role: "GUEST", email: "guest@oldwestbury.edu" }
+  const users = [
+    { name: "Super Admin", email: "superadmin@oldwestbury.edu", role: "SUPER_ADMIN" },
+    { name: "Staff User", email: "staff@oldwestbury.edu", role: "STAFF" },
+    { name: "Faculty User", email: "faculty@oldwestbury.edu", role: "FACULTY" },
+    { name: "Student User", email: "student@oldwestbury.edu", role: "STUDENT" },
+    { name: "Guest User", email: "guest@oldwestbury.edu", role: "GUEST" }
   ];
   
-  for (const { role, email } of roles) {
+  for (const { name, email, role } of users) {
     const password = await bcrypt.hash("password123", 10);
     
     await prisma.user.upsert({
       where: { email },
-      update: { password, role },
+      update: { password, role, name },
       create: {
-        name: `${role.charAt(0) + role.slice(1).toLowerCase()} User`,
+        name,
         email,
         password,
-        role: role,
+        role,
       },
     });
   }

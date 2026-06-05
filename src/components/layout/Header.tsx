@@ -50,7 +50,7 @@ export function Header() {
               >
                 Portal
               </Link>
-              {(session.user as any).role === "ADMIN" || (session.user as any).role === "EDITOR" || (session.user as any).role === "FACULTY" || (session.user as any).role === "CATALYST_MEMBER" ? (
+              {(session.user as any).role === "ADMIN" || (session.user as any).role === "FACULTY" || (session.user as any).role === "STAFF" ? (
                 <Link
                   href="/publish"
                   className="hidden md:flex items-center space-x-2 rounded-md bg-primary/10 px-3 py-2 text-sm font-medium text-primary hover:bg-primary/20"

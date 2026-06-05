@@ -4,9 +4,12 @@ import { useState } from "react";
 import { Role } from "@prisma/client";
 import UserActions from "@/components/admin/UserActions";
 
-export default function UserTabs({ initialUsers }: { initialUsers: any[] }) {
+export default function UserTabs({ initialUsers, currentUserRole }: { initialUsers: any[], currentUserRole: string }) {
   const roles = Object.values(Role);
   const [activeRole, setActiveRole] = useState<Role>(roles[0]);
+
+  const isSuperAdmin = currentUserRole === "SUPER_ADMIN";
+  const isAdmin = currentUserRole === "ADMIN";
 
   return (
     <div>
@@ -39,15 +42,25 @@ export default function UserTabs({ initialUsers }: { initialUsers: any[] }) {
           <tbody>
             {initialUsers
               .filter((u) => u.role === activeRole)
-              .map((user) => (
-                <tr key={user.id} className="border-t">
-                  <td className="py-3">{user.name}</td>
-                  <td className="py-3">{user.email}</td>
-                  <td className="py-3">
-                    <UserActions userId={user.id} />
-                  </td>
-                </tr>
-              ))}
+              .map((user) => {
+                const targetIsAdminOrSuper = user.role === "ADMIN" || user.role === "SUPER_ADMIN";
+                const canDelete = isSuperAdmin;
+                const canEdit = isSuperAdmin || (isAdmin && !targetIsAdminOrSuper);
+
+                return (
+                  <tr key={user.id} className="border-t">
+                    <td className="py-3">{user.name}</td>
+                    <td className="py-3">{user.email}</td>
+                    <td className="py-3">
+                      <UserActions 
+                        userId={user.id} 
+                        canEdit={canEdit}
+                        canDelete={canDelete}
+                      />
+                    </td>
+                  </tr>
+                );
+              })}
           </tbody>
         </table>
       </div>

@@ -90,7 +90,7 @@ export default function PublishPage() {
       if (publishType === "video") endpoint = "/api/videos";
       if (publishType === "paper") endpoint = "/api/papers";
 
-      let body: any = { title, categoryId, published: true };
+      let body: any = { title, categoryId };
       if (publishType === "article") body.content = content;
       if (publishType === "video") {
         body.description = description;

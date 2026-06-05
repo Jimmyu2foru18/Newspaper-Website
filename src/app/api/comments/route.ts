@@ -8,7 +8,7 @@ export async function POST(req: Request) {
   try {
     const session = await getServerSession(authOptions);
     const body = await req.json();
-    const { content, articleId, videoId, paperId, parentId, isAnonymous } = body;
+    const { content, articleId, videoId, paperId, parentId, isAnonymous, guestName: providedGuestName, guestEmail } = body;
 
     if (!content) {
       return new NextResponse("Content is required", { status: 400 });
@@ -18,7 +18,7 @@ export async function POST(req: Request) {
     let isGuest = false;
 
     if (!session || isAnonymous) {
-      guestName = generateGuestName();
+      guestName = providedGuestName || generateGuestName();
       isGuest = true;
     }
 
@@ -31,7 +31,9 @@ export async function POST(req: Request) {
         parentId,
         userId: session?.user ? (session.user as any).id : null,
         guestName,
+        guestEmail,
         isGuest,
+        status: isGuest ? "PENDING" : "APPROVED",
       },
       include: {
         user: {
@@ -63,6 +65,7 @@ export async function GET(req: Request) {
         videoId: videoId || undefined,
         paperId: paperId || undefined,
         parentId: null, // Only fetch top-level comments
+        status: "APPROVED",
       },
       include: {
         user: {

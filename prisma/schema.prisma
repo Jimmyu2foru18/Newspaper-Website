@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -10,39 +7,31 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-enum Role {
-  GUEST
-  STUDENT
-  FACULTY
-  CATALYST_MEMBER
-  EDITOR
-  ADMIN
-}
-
 model User {
-  id            String    @id @default(cuid())
+  id            String          @id @default(cuid())
   name          String?
-  email         String?   @unique
+  email         String?         @unique
   emailVerified DateTime?
   image         String?
   password      String?
-  role          Role      @default(STUDENT)
+  role          Role            @default(STUDENT)
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
   accounts      Account[]
-  sessions      Session[]
   articles      Article[]
-  videos        Video[]
-  papers        ResearchPaper[]
   comments      Comment[]
   profile       Profile?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  papers        ResearchPaper[]
+  sessions      Session[]
+  videos        Video[]
 }
 
 model Profile {
-  id        String   @id @default(cuid())
+  id        String  @id @default(cuid())
   bio       String?
-  userId    String   @unique
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  avatarUrl String?
+  userId    String  @unique
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Account {
@@ -51,15 +40,14 @@ model Account {
   type              String
   provider          String
   providerAccountId String
-  refresh_token     String? @db.Text
-  access_token      String? @db.Text
+  refresh_token     String?
+  access_token      String?
   expires_at        Int?
   token_type        String?
   scope             String?
-  id_token          String? @db.Text
+  id_token          String?
   session_state     String?
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
 }
@@ -81,100 +69,117 @@ model VerificationToken {
 }
 
 model Category {
-  id        String    @id @default(cuid())
-  name      String    @unique
-  slug      String    @unique
-  articles  Article[]
-  videos    Video[]
-  papers    ResearchPaper[]
+  id       String          @id @default(cuid())
+  name     String          @unique
+  slug     String          @unique
+  articles Article[]
+  papers   ResearchPaper[]
+  videos   Video[]
 }
 
 model Tag {
-  id        String    @id @default(cuid())
-  name      String    @unique
-  slug      String    @unique
-  articles  Article[]
+  id       String    @id @default(cuid())
+  name     String    @unique
+  slug     String    @unique
+  articles Article[] @relation("ArticleToTag")
 }
 
 model Article {
   id            String    @id @default(cuid())
   title         String
   slug          String    @unique
-  content       String    @db.Text
-  excerpt       String?   @db.Text
+  content       String
+  excerpt       String?
   published     Boolean   @default(false)
   featured      Boolean   @default(false)
   authorId      String
-  author        User      @relation(fields: [authorId], references: [id])
   categoryId    String
-  category      Category  @relation(fields: [categoryId], references: [id])
-  tags          Tag[]
   featuredImage String?
-  comments      Comment[]
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
+  author        User      @relation(fields: [authorId], references: [id])
+  category      Category  @relation(fields: [categoryId], references: [id])
+  comments      Comment[]
+  tags          Tag[]     @relation("ArticleToTag")
 }
 
 model Video {
-  id            String   @id @default(cuid())
-  title         String
-  slug          String   @unique
-  description   String?  @db.Text
-  url           String   // YouTube/Vimeo URL or direct link
-  thumbnailUrl  String?
-  published     Boolean  @default(false)
-  authorId      String
-  author        User     @relation(fields: [authorId], references: [id])
-  categoryId    String
-  category      Category @relation(fields: [categoryId], references: [id])
-  comments      Comment[]
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  id           String    @id @default(cuid())
+  title        String
+  slug         String    @unique
+  description  String?
+  url          String
+  thumbnailUrl String?
+  published    Boolean   @default(false)
+  authorId     String
+  categoryId   String
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  comments     Comment[]
+  author       User      @relation(fields: [authorId], references: [id])
+  category     Category  @relation(fields: [categoryId], references: [id])
 }
 
 model ResearchPaper {
-  id            String   @id @default(cuid())
-  title         String
-  slug          String   @unique
-  abstract      String   @db.Text
-  content       String?  @db.Text // Optional if PDF is the main content
-  pdfUrl        String?  // Link to the hosted PDF
-  citation      String?  @db.Text
-  published     Boolean  @default(false)
-  authorId      String
-  author        User     @relation(fields: [authorId], references: [id])
-  categoryId    String
-  category      Category @relation(fields: [categoryId], references: [id])
-  comments      Comment[]
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  id         String    @id @default(cuid())
+  title      String
+  slug       String    @unique
+  abstract   String
+  content    String?
+  pdfUrl     String?
+  citation   String?
+  published  Boolean   @default(false)
+  authorId   String
+  categoryId String
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  comments   Comment[]
+  author     User      @relation(fields: [authorId], references: [id])
+  category   Category  @relation(fields: [categoryId], references: [id])
 }
 
 model Comment {
-  id        String   @id @default(cuid())
-  content   String   @db.Text
+  id        String         @id @default(cuid())
+  content   String
   articleId String?
-  article   Article? @relation(fields: [articleId], references: [id], onDelete: Cascade)
   videoId   String?
-  video     Video?   @relation(fields: [videoId], references: [id], onDelete: Cascade)
   paperId   String?
-  paper     ResearchPaper? @relation(fields: [paperId], references: [id], onDelete: Cascade)
   userId    String?
-  user      User?    @relation(fields: [userId], references: [id])
   guestName String?
-  isGuest   Boolean  @default(false)
+  guestEmail String?
+  isGuest   Boolean        @default(false)
+  status    CommentStatus  @default(APPROVED)
   parentId  String?
-  parent    Comment? @relation("Thread", fields: [parentId], references: [id])
-  replies   Comment[] @relation("Thread")
+  createdAt DateTime       @default(now())
+  article   Article?       @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  paper     ResearchPaper? @relation(fields: [paperId], references: [id], onDelete: Cascade)
+  parent    Comment?       @relation("Thread", fields: [parentId], references: [id])
+  replies   Comment[]      @relation("Thread")
+  user      User?          @relation(fields: [userId], references: [id])
+  video     Video?         @relation(fields: [videoId], references: [id], onDelete: Cascade)
   reports   Report[]
-  createdAt DateTime @default(now())
+}
+
+enum CommentStatus {
+  PENDING
+  APPROVED
+  REJECTED
 }
 
 model Report {
-  id        String   @id @default(cuid())
-  reason    String
-  commentId String
-  comment   Comment  @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  id         String   @id @default(cuid())
+  reason     String
+  commentId  String
   reporterId String?
-  createdAt DateTime @default(now())
+  createdAt  DateTime @default(now())
+  comment    Comment  @relation(fields: [commentId], references: [id], onDelete: Cascade)
+}
+
+enum Role {
+  GUEST
+  STUDENT
+  STAFF
+  FACULTY
+  ADMIN
+  SUPER_ADMIN
 }

@@ -3,7 +3,15 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
-export default function UserActions({ userId }: { userId: string }) {
+export default function UserActions({ 
+  userId, 
+  canEdit, 
+  canDelete 
+}: { 
+  userId: string; 
+  canEdit: boolean; 
+  canDelete: boolean; 
+}) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
 
@@ -29,14 +37,20 @@ export default function UserActions({ userId }: { userId: string }) {
 
   return (
     <div className="flex gap-2">
-      <button 
-        disabled={loading}
-        onClick={deleteUser}
-        className="text-red-600 hover:text-red-800 disabled:opacity-50"
-      >
-        Delete
-      </button>
-      {/* Edit implementation will follow */}
+      {canEdit && (
+        <button className="text-blue-600 hover:text-blue-800">
+          Edit
+        </button>
+      )}
+      {canDelete && (
+        <button 
+          disabled={loading}
+          onClick={deleteUser}
+          className="text-red-600 hover:text-red-800 disabled:opacity-50"
+        >
+          Delete
+        </button>
+      )}
     </div>
   );
 }
