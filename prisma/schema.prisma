@@ -26,6 +26,7 @@ model User {
   papers        ResearchPaper[]
   sessions      Session[]
   videos        Video[]
+  studentPosts  StudentPost[]
 }
 
 model Profile {
@@ -160,6 +161,14 @@ model Comment {
   user      User?          @relation(fields: [userId], references: [id])
   video     Video?         @relation(fields: [videoId], references: [id], onDelete: Cascade)
   reports   Report[]
+}
+
+model StudentPost {
+  id        String   @id @default(cuid())
+  content   String
+  authorId  String
+  createdAt DateTime @default(now())
+  author    User     @relation(fields: [authorId], references: [id])
 }
 
 enum CommentStatus {

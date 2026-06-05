@@ -16,7 +16,23 @@ export default function PublishPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
   
-  const [publishType, setPublishType] = useState<"article" | "video" | "paper">("article");
+  const userRole = (session?.user as any)?.role;
+  const isStudent = userRole === "STUDENT";
+  
+  const [publishType, setPublishType] = useState<"article" | "video" | "paper">(isStudent ? "paper" : "article"); // Actually need to hide this entirely for students if possible or default differently.
+
+  // ... (in return)
+      {/* Tabs - Only show for non-students */}
+      {!isStudent && (
+      <div className="flex gap-4 mb-8 border-b overflow-x-auto">
+        {/* ... (buttons) */}
+      </div>
+      )}
+      {isStudent && (
+        <div className="p-4 bg-yellow-50 text-yellow-700 rounded-md mb-8">
+            Students cannot publish articles, videos, or papers here. Please use your profile page to create personal posts.
+        </div>
+      )}
   
   // Common state
   const [title, setTitle] = useState("");

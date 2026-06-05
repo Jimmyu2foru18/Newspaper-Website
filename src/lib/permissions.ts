@@ -7,6 +7,17 @@ export const canManageUser = (actorRole: Role, targetRole: Role): boolean => {
   return false;
 };
 
+export const canCreateContent = (
+  actor: { role: Role },
+  contentType: "Article" | "Video" | "ResearchPaper" | "StudentPost"
+): boolean => {
+  if (actor.role === Role.SUPER_ADMIN || actor.role === Role.ADMIN || actor.role === Role.FACULTY) return true;
+  if (actor.role === Role.STAFF) return contentType !== "ResearchPaper";
+  if (actor.role === Role.STUDENT) return contentType === "StudentPost";
+  
+  return false;
+};
+
 export const canManageContent = (
   actor: { id: string; role: Role },
   content: { authorId: string },
