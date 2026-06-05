@@ -3,6 +3,7 @@ import { authOptions } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import prisma from "@/lib/prisma";
 import { Role } from "@prisma/client";
+import UserActions from "@/components/admin/UserActions";
 
 export default async function AdminDashboard() {
   const session = await getServerSession(authOptions);
@@ -38,9 +39,8 @@ export default async function AdminDashboard() {
                 <tr key={user.id} className="border-t">
                   <td className="py-2">{user.name}</td>
                   <td className="py-2">{user.email}</td>
-                  <td className="py-2 text-primary">
-                    {/* Placeholder for Edit/Delete buttons */}
-                    Edit | Delete
+                  <td className="py-2">
+                    <UserActions userId={user.id} />
                   </td>
                 </tr>
               ))}
