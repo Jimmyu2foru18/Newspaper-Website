@@ -14,17 +14,36 @@ async function main() {
   
   for (const { name, email, role } of users) {
     const password = await bcrypt.hash("password123", 10);
+    const [firstName, ...lastNameParts] = name.split(" ");
+    const lastName = lastNameParts.join(" ");
     
+    // Assign a predictable ID for seeded users to keep them consistent
+    const id = email.includes("superadmin") ? "700000001" : 
+               email.includes("staff") ? "700000002" : 
+               email.includes("faculty") ? "700000003" : 
+               email.includes("student") ? "700000004" : "700000005";
+
     await prisma.user.upsert({
       where: { email },
-      update: { password, role, name },
+      update: { password, firstName, lastName },
       create: {
-        name,
+        id,
+        firstName,
+        lastName,
         email,
         password,
-        role,
       },
     });
+
+    // Assign roles
+    const roleEntry = await prisma.role.findUnique({ where: { name: role } });
+    if (roleEntry) {
+        await prisma.userRole.upsert({
+            where: { userId_roleId: { userId: id, roleId: roleEntry.id } },
+            update: {},
+            create: { userId: id, roleId: roleEntry.id }
+        });
+    }
   }
 
   const categories = [

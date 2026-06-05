@@ -7,6 +7,7 @@ import { LogOut, User as UserIcon } from "lucide-react";
 const desktopNavItems = [
   { name: "Home", href: "/" },
   { name: "News", href: "/news" },
+  { name: "Images", href: "/images" },
   { name: "Videos", href: "/videos" },
   { name: "Journals", href: "/journals" },
   { name: "Search", href: "/search" },
@@ -15,6 +16,9 @@ const desktopNavItems = [
 
 export function Header() {
   const { data: session } = useSession();
+  const user = session?.user as any;
+  const canPublish = user?.roles?.some((r: string) => ["ADMIN", "SUPER_ADMIN", "FACULTY", "STAFF"].includes(r));
+  const canAccessAdmin = user?.roles?.some((r: string) => ["FACULTY", "ADMIN", "SUPER_ADMIN"].includes(r));
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60">
@@ -39,6 +43,11 @@ export function Header() {
               {item.name}
             </Link>
           ))}
+          {canAccessAdmin && (
+            <Link href="/admin/dashboard" className="text-primary hover:text-primary/80 font-bold">
+              Editorial
+            </Link>
+          )}
         </nav>
 
         <div className="flex items-center space-x-4">
@@ -50,7 +59,7 @@ export function Header() {
               >
                 Portal
               </Link>
-              {(session.user as any).role === "ADMIN" || (session.user as any).role === "FACULTY" || (session.user as any).role === "STAFF" ? (
+              {(session.user as any).roles?.some((r: string) => ["ADMIN", "SUPER_ADMIN", "FACULTY", "STAFF"].includes(r)) ? (
                 <Link
                   href="/publish"
                   className="hidden md:flex items-center space-x-2 rounded-md bg-primary/10 px-3 py-2 text-sm font-medium text-primary hover:bg-primary/20"

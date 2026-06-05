@@ -2,11 +2,20 @@ import Link from "next/link";
 import prisma from "@/lib/prisma";
 import { format } from "date-fns";
 import { BookOpen, Download, FileText } from "lucide-react";
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "@/lib/auth";
+import { canCreateContent } from "@/lib/permissions";
+import ContentActions from "@/components/admin/ContentActions";
 
 export default async function JournalsPage() {
+  const session = await getServerSession(authOptions);
+  const userRoles = (session?.user as any)?.roles || [];
+  const currentUserId = (session?.user as any)?.id || "";
+  const canPublish = canCreateContent(userRoles, "ResearchPaper");
+
   const papers = await prisma.researchPaper.findMany({
     where: {
-      published: true,
+      approvalStatus: "APPROVED",
     },
     include: {
       author: {
@@ -31,15 +40,17 @@ export default async function JournalsPage() {
         <div>
           <h1 className="text-4xl font-bold serif-text text-primary mb-4">Academic Journals & Research</h1>
           <p className="text-gray-600 max-w-2xl">
-            Explore scholarly publications, research papers, and academic journals authored by SUNY Old Westbury students and faculty.
+            Explore scholarly publications, research papers, and academic journals authored by SUNY Old Westbury community members.
           </p>
         </div>
-        <Link
-          href="/publish?type=paper"
-          className="inline-flex h-11 items-center justify-center rounded-md bg-primary px-6 py-2 text-sm font-medium text-white shadow transition-colors hover:bg-primary/90"
-        >
-          Submit Paper
-        </Link>
+        {canPublish && (
+          <Link
+            href="/publish?type=paper"
+            className="inline-flex h-11 items-center justify-center rounded-md bg-primary px-6 py-2 text-sm font-medium text-white shadow transition-colors hover:bg-primary/90"
+          >
+            Submit Paper
+          </Link>
+        )}
       </div>
 
       {papers.length === 0 ? (
@@ -98,10 +109,23 @@ export default async function JournalsPage() {
                       </Link>
                     )}
                   </div>
+                  <ContentActions 
+                    contentId={paper.id}
+                    authorId={paper.authorId}
+                    contentType="ResearchPaper"
+                    currentUserId={currentUserId}
+                    currentUserRoles={userRoles}
+                  />
                 </div>
-                <div className="hidden md:flex flex-col items-center justify-center w-32 h-40 bg-gray-100 rounded border-2 border-dashed border-gray-200 text-gray-300">
-                   <FileText className="h-12 w-12 mb-2" />
-                   <span className="text-[10px] uppercase font-bold tracking-tighter">Catalyst Paper</span>
+                <div className="hidden md:flex flex-col items-center justify-center w-40 h-52 bg-gray-100 rounded-lg border-2 border-dashed border-gray-200 text-gray-300 overflow-hidden relative shadow-sm group-hover:shadow-md transition-shadow">
+                   {paper.imageUrl ? (
+                       <img src={paper.imageUrl} alt="Cover" className="w-full h-full object-cover" />
+                   ) : (
+                       <>
+                        <FileText className="h-12 w-12 mb-2" />
+                        <span className="text-[10px] uppercase font-bold tracking-tighter text-center px-2">Catalyst Research Paper</span>
+                       </>
+                   )}
                 </div>
               </div>
             </div>

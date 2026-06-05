@@ -6,14 +6,14 @@ export async function GET(req: Request) {
   const query = searchParams.get("q");
 
   if (!query) {
-    return NextResponse.json({ articles: [], videos: [], papers: [] });
+    return NextResponse.json({ articles: [], videos: [], papers: [], images: [] });
   }
 
   try {
-    const [articles, videos, papers] = await Promise.all([
+    const [articles, videos, papers, images] = await Promise.all([
       prisma.article.findMany({
         where: {
-          published: true,
+          approvalStatus: "APPROVED",
           OR: [
             { title: { contains: query, mode: "insensitive" } },
             { content: { contains: query, mode: "insensitive" } },
@@ -24,7 +24,7 @@ export async function GET(req: Request) {
       }),
       prisma.video.findMany({
         where: {
-          published: true,
+          approvalStatus: "APPROVED",
           OR: [
             { title: { contains: query, mode: "insensitive" } },
             { description: { contains: query, mode: "insensitive" } },
@@ -35,7 +35,7 @@ export async function GET(req: Request) {
       }),
       prisma.researchPaper.findMany({
         where: {
-          published: true,
+          approvalStatus: "APPROVED",
           OR: [
             { title: { contains: query, mode: "insensitive" } },
             { abstract: { contains: query, mode: "insensitive" } },
@@ -44,9 +44,20 @@ export async function GET(req: Request) {
         include: { category: true, author: true },
         take: 5,
       }),
+      (prisma as any).image ? (prisma as any).image.findMany({
+        where: {
+          approvalStatus: "APPROVED",
+          OR: [
+            { title: { contains: query, mode: "insensitive" } },
+            { description: { contains: query, mode: "insensitive" } },
+          ],
+        },
+        include: { category: true, author: true },
+        take: 8,
+      }) : Promise.resolve([]),
     ]);
 
-    return NextResponse.json({ articles, videos, papers });
+    return NextResponse.json({ articles, videos, papers, images });
   } catch (error) {
     console.error("SEARCH_ERROR", error);
     return new NextResponse("Internal Error", { status: 500 });

@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import prisma from "@/lib/prisma";
-import { canManageContent } from "@/lib/permissions";
+import { canCreateContent } from "@/lib/permissions";
 
 function slugify(text: string) {
   return text
@@ -24,66 +24,81 @@ export async function POST(req: Request) {
 
     const user = await prisma.user.findUnique({
       where: { id: (session.user as any).id },
+      include: {
+        roles: {
+          include: {
+            role: true,
+          },
+        },
+      },
     });
 
     if (!user) {
-      return new NextResponse("User not found", { status: 404 });
-    }
+      import { canCreateContent, getHighestRole, ROLE_HIERARCHY } from "@/lib/permissions";
 
-    // Check if user can create content
-    if (!canManageContent(user, { authorId: user.id }, "create")) {
-        return new NextResponse("Forbidden", { status: 403 });
-    }
+      // ... (slugify)
 
-    const body = await req.json();
-    const { title, abstract, content, pdfUrl, citation, categoryId } = body;
+      export async function POST(req: Request) {
+        try {
+          // ... (session/user check)
+          // ... (userWithRoles)
 
-    if (!title || !abstract || !categoryId) {
-      return new NextResponse("Missing fields", { status: 400 });
-    }
+          // Check if user can create content
+          if (!canCreateContent(userWithRoles.roles, "ResearchPaper")) {
+              return new NextResponse("Forbidden", { status: 403 });
+          }
 
-    const slug = `${slugify(title)}-${Math.random().toString(36).substring(2, 7)}`;
+          const body = await req.json();
+          const { title, abstract, categoryId, pdfUrl, imageUrl, content, citation } = body;
 
-    const isStudent = user.role === "STUDENT";
+          if (!title || !abstract || !categoryId) {
+            return new NextResponse("Missing fields", { status: 400 });
+          }
 
-    const paper = await prisma.researchPaper.create({
-      data: {
-        title,
-        abstract,
-        content,
-        pdfUrl,
-        citation,
-        slug,
-        categoryId,
-        published: isStudent ? false : true,
-        authorId: user.id,
-      },
-    });
+          const slug = `${slugify(title)}-${Math.random().toString(36).substring(2, 7)}`;
 
-    return NextResponse.json(paper);
-  } catch (error) {
-    console.error("PAPER_POST_ERROR", error);
-    return new NextResponse("Internal Error", { status: 500 });
-  }
-}
-// GET remains the same
+          const highestRole = getHighestRole(userWithRoles.roles);
+          const hasStaffRole = userWithRoles.roles.includes("STAFF");
+          const approvalStatus = (!hasStaffRole && ROLE_HIERARCHY[highestRole] >= ROLE_HIERARCHY.FACULTY) ? "APPROVED" : "PENDING";
+          const paper = await prisma.researchPaper.create({
+            data: {
+              title,
+              abstract,
+              pdfUrl,
+              imageUrl,
+              content,
+              citation,
+              slug,
+              categoryId,
+              approvalStatus,
+              authorId: user.id,
+            },
+          });
 
-export async function GET() {
-  try {
-    const papers = await prisma.researchPaper.findMany({
-      where: {
-        published: true,
-      },
-      include: {
-        author: true,
-        category: true,
-      },
-      orderBy: {
-        createdAt: "desc",
-      },
-    });
-    return NextResponse.json(papers);
-  } catch (error) {
-    return new NextResponse("Internal Error", { status: 500 });
-  }
-}
+          return NextResponse.json(paper);
+        } catch (error) {
+          console.error("PAPER_POST_ERROR", error);
+          return new NextResponse("Internal Error", { status: 500 });
+        }
+      }
+
+      export async function GET() {
+        try {
+          const papers = await prisma.researchPaper.findMany({
+            where: {
+              approvalStatus: "APPROVED",
+            },
+            include: {
+              author: true,
+              category: true,
+            },
+            orderBy: {
+              createdAt: "desc",
+            },
+          });
+          return NextResponse.json(papers);
+        } catch (error) {
+          return new NextResponse("Internal Error", { status: 500 });
+        }
+      }
+

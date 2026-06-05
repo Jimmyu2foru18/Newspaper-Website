@@ -7,16 +7,22 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum ApprovalStatus {
+
+  PENDING
+  APPROVED
+  REJECTED
+}
+
 model User {
-  id            String          @id @default(cuid())
-  name          String?
+  id            String          @id
   firstName     String?
   lastName      String?
   email         String?         @unique
   emailVerified DateTime?
   image         String?
   password      String?
-  role          Role            @default(STUDENT)
+  roles         UserRole[]
   createdAt     DateTime        @default(now())
   updatedAt     DateTime        @updatedAt
   accounts      Account[]
@@ -26,7 +32,33 @@ model User {
   papers        ResearchPaper[]
   sessions      Session[]
   videos        Video[]
-  studentPosts  StudentPost[]
+  studentPosts  StudentPost[] @relation("StudentAuthor")
+  postsToReview StudentPost[] @relation("FacultyMentor")
+  images        Image[]
+  likes         Like[]
+  facultyId     String?
+  monitors      User[]          @relation("FacultyMonitors")
+  monitoredBy   User?           @relation("FacultyMonitors", fields: [facultyId], references: [id])
+  editedArticles Article[]      @relation("ArticleEditor")
+  editedVideos   Video[]        @relation("VideoEditor")
+  editedPapers   ResearchPaper[] @relation("PaperEditor")
+  editedImages   Image[]        @relation("ImageEditor")
+}
+
+
+model Role {
+  id    String     @id @default(cuid())
+  name  String     @unique
+  users UserRole[]
+}
+
+model UserRole {
+  userId String
+  roleId String
+  user   User   @relation(fields: [userId], references: [id])
+  role   Role   @relation(fields: [roleId], references: [id])
+
+  @@id([userId, roleId])
 }
 
 model Profile {
@@ -78,6 +110,7 @@ model Category {
   articles Article[]
   papers   ResearchPaper[]
   videos   Video[]
+  images   Image[]
 }
 
 model Tag {
@@ -88,19 +121,21 @@ model Tag {
 }
 
 model Article {
-  id            String    @id @default(cuid())
+  id            String          @id @default(cuid())
   title         String
   slug          String    @unique
   content       String
   excerpt       String?
-  published     Boolean   @default(false)
+  approvalStatus ApprovalStatus @default(PENDING)
   featured      Boolean   @default(false)
   authorId      String
+  editorId      String?
   categoryId    String
   featuredImage String?
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
   author        User      @relation(fields: [authorId], references: [id])
+  editor        User?     @relation("ArticleEditor", fields: [editorId], references: [id])
   category      Category  @relation(fields: [categoryId], references: [id])
   comments      Comment[]
   tags          Tag[]     @relation("ArticleToTag")
@@ -113,13 +148,15 @@ model Video {
   description  String?
   url          String
   thumbnailUrl String?
-  published    Boolean   @default(false)
+  approvalStatus ApprovalStatus @default(PENDING)
   authorId     String
+  editorId     String?
   categoryId   String
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
   comments     Comment[]
   author       User      @relation(fields: [authorId], references: [id])
+  editor       User?     @relation("VideoEditor", fields: [editorId], references: [id])
   category     Category  @relation(fields: [categoryId], references: [id])
 }
 
@@ -130,16 +167,20 @@ model ResearchPaper {
   abstract   String
   content    String?
   pdfUrl     String?
+  imageUrl   String?
   citation   String?
-  published  Boolean   @default(false)
+  approvalStatus ApprovalStatus @default(PENDING)
   authorId   String
+  editorId   String?
   categoryId String
   createdAt  DateTime  @default(now())
   updatedAt  DateTime  @updatedAt
   comments   Comment[]
   author     User      @relation(fields: [authorId], references: [id])
+  editor     User?     @relation("PaperEditor", fields: [editorId], references: [id])
   category   Category  @relation(fields: [categoryId], references: [id])
 }
+
 
 model Comment {
   id        String         @id @default(cuid())
@@ -147,6 +188,7 @@ model Comment {
   articleId String?
   videoId   String?
   paperId   String?
+  imageId   String?
   userId    String?
   guestName String?
   guestEmail String?
@@ -156,6 +198,7 @@ model Comment {
   createdAt DateTime       @default(now())
   article   Article?       @relation(fields: [articleId], references: [id], onDelete: Cascade)
   paper     ResearchPaper? @relation(fields: [paperId], references: [id], onDelete: Cascade)
+  image     Image?         @relation(fields: [imageId], references: [id], onDelete: Cascade)
   parent    Comment?       @relation("Thread", fields: [parentId], references: [id])
   replies   Comment[]      @relation("Thread")
   user      User?          @relation(fields: [userId], references: [id])
@@ -163,12 +206,51 @@ model Comment {
   reports   Report[]
 }
 
+model Image {
+  id           String    @id @default(cuid())
+  title        String
+  slug         String    @unique
+  description  String?
+  url          String
+  approvalStatus ApprovalStatus @default(PENDING)
+  authorId     String
+  editorId     String?
+  categoryId   String
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  comments     Comment[]
+  likes        Like[]
+  author       User      @relation(fields: [authorId], references: [id])
+  editor       User?     @relation("ImageEditor", fields: [editorId], references: [id])
+  category     Category  @relation(fields: [categoryId], references: [id])
+}
+
+model Like {
+  id        String   @id @default(cuid())
+  userId    String
+  imageId   String?
+  articleId String?
+  videoId   String?
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  image     Image?   @relation(fields: [imageId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, imageId])
+  @@unique([userId, articleId])
+  @@unique([userId, videoId])
+}
+
 model StudentPost {
   id        String   @id @default(cuid())
   content   String
+  fileUrl   String?
   authorId  String
+  facultyId String?
+  status    ApprovalStatus @default(PENDING)
+  feedback  String?
   createdAt DateTime @default(now())
-  author    User     @relation(fields: [authorId], references: [id])
+  author    User     @relation("StudentAuthor", fields: [authorId], references: [id])
+  faculty   User?    @relation("FacultyMentor", fields: [facultyId], references: [id])
 }
 
 enum CommentStatus {
@@ -184,13 +266,4 @@ model Report {
   reporterId String?
   createdAt  DateTime @default(now())
   comment    Comment  @relation(fields: [commentId], references: [id], onDelete: Cascade)
-}
-
-enum Role {
-  GUEST
-  STUDENT
-  STAFF
-  FACULTY
-  ADMIN
-  SUPER_ADMIN
 }

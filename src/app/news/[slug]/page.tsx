@@ -16,6 +16,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
     where: { slug },
     include: {
       author: true,
+      editor: true,
       category: true,
     },
   });
@@ -44,8 +45,10 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
             {article.author.name?.charAt(0)}
           </div>
           <div className="text-left">
-            <p className="text-sm font-bold text-gray-900">{article.author.name}</p>
-            <p className="text-xs text-gray-500">Catalyst Contributor</p>
+            <p className="text-sm font-bold text-gray-900">{article.author.firstName} {article.author.lastName}</p>
+            <p className="text-xs text-gray-500">
+                {article.editor ? `Edited by ${article.editor.firstName} ${article.editor.lastName}` : "Catalyst Contributor"}
+            </p>
           </div>
         </div>
       </div>

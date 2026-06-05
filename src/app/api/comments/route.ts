@@ -8,18 +8,18 @@ export async function POST(req: Request) {
   try {
     const session = await getServerSession(authOptions);
     const body = await req.json();
-    const { content, articleId, videoId, paperId, parentId, isAnonymous, guestName: providedGuestName, guestEmail } = body;
+    const { content, articleId, videoId, paperId, imageId, parentId, isAnonymous } = body;
 
-    if (!content) {
-      return new NextResponse("Content is required", { status: 400 });
-    }
+    let userId = null;
+    let isGuest = true;
+    let guestName = "Guest";
 
-    let guestName = null;
-    let isGuest = false;
-
-    if (!session || isAnonymous) {
-      guestName = providedGuestName || generateGuestName();
-      isGuest = true;
+    if (session?.user && !isAnonymous) {
+        userId = (session.user as any).id;
+        isGuest = false;
+        guestName = `${(session.user as any).firstName || "User"}`;
+    } else {
+        guestName = `Guest ${Math.floor(Math.random() * 1000)}`;
     }
 
     const comment = await prisma.comment.create({
@@ -28,17 +28,18 @@ export async function POST(req: Request) {
         articleId,
         videoId,
         paperId,
+        imageId,
         parentId,
-        userId: session?.user ? (session.user as any).id : null,
-        guestName,
-        guestEmail,
+        userId,
         isGuest,
-        status: isGuest ? "PENDING" : "APPROVED",
+        guestName,
+        status: "APPROVED" 
       },
       include: {
         user: {
           select: {
-            name: true,
+            firstName: true,
+            lastName: true,
             image: true,
           },
         },
@@ -70,7 +71,8 @@ export async function GET(req: Request) {
       include: {
         user: {
           select: {
-            name: true,
+            firstName: true,
+            lastName: true,
             image: true,
           },
         },
@@ -78,7 +80,8 @@ export async function GET(req: Request) {
           include: {
             user: {
               select: {
-                name: true,
+                firstName: true,
+                lastName: true,
                 image: true,
               },
             },

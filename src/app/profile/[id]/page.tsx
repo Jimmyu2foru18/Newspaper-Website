@@ -11,9 +11,9 @@ export default async function PublicProfilePage({ params }: { params: { id: stri
     include: { 
         profile: true,
         roles: { include: { role: true } },
-        articles: { where: { published: true } },
-        videos: { where: { published: true } },
-        papers: { where: { published: true } },
+        articles: { where: { approvalStatus: "APPROVED" } },
+        videos: { where: { approvalStatus: "APPROVED" } },
+        papers: { where: { approvalStatus: "APPROVED" } },
     },
   });
 

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { Search as SearchIcon, Newspaper, Video, GraduationCap, Loader2 } from "lucide-react";
+import { Search as SearchIcon, Newspaper, Video, GraduationCap, Loader2, Image as ImageIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export default function SearchPage() {
@@ -11,7 +11,8 @@ export default function SearchPage() {
     articles: any[];
     videos: any[];
     papers: any[];
-  }>({ articles: [], videos: [], papers: [] });
+    images: any[];
+  }>({ articles: [], videos: [], papers: [], images: [] });
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -19,7 +20,7 @@ export default function SearchPage() {
       if (query) {
         performSearch();
       } else {
-        setResults({ articles: [], videos: [], papers: [] });
+        setResults({ articles: [], videos: [], papers: [], images: [] });
       }
     }, 300);
 
@@ -41,10 +42,11 @@ export default function SearchPage() {
     }
   };
 
-  const hasResults = results.articles.length > 0 || results.videos.length > 0 || results.papers.length > 0;
+  const hasResults = results.articles.length > 0 || results.videos.length > 0 || results.papers.length > 0 || results.images.length > 0;
 
   return (
     <div className="container mx-auto px-4 py-12 max-w-4xl">
+      {/* ... (existing header and search input) */}
       <div className="mb-12 text-center">
         <h1 className="text-4xl font-bold serif-text text-primary mb-4">Search the Catalyst</h1>
         <p className="text-gray-600">Find stories, videos, and research from across the campus.</p>
@@ -109,6 +111,25 @@ export default function SearchPage() {
                     </div>
                   </div>
                   <h3 className="font-bold serif-text group-hover:text-primary transition-colors">{video.title}</h3>
+                </Link>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {results.images.length > 0 && (
+          <section>
+            <h2 className="text-2xl font-bold serif-text text-primary mb-6 flex items-center gap-2">
+              <ImageIcon className="h-6 w-6" /> Gallery Images
+            </h2>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {results.images.map((image) => (
+                <Link key={image.id} href={`/images/${image.slug}`} className="block group">
+                  <div className="aspect-square bg-gray-100 rounded-xl overflow-hidden mb-2 relative shadow-sm">
+                    <img src={image.url} alt={image.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform" />
+                    <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity" />
+                  </div>
+                  <h3 className="text-sm font-bold truncate group-hover:text-primary transition-colors">{image.title}</h3>
                 </Link>
               ))}
             </div>

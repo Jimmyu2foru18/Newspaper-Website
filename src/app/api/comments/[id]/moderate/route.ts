@@ -3,7 +3,6 @@ import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 import { canModerate } from "@/lib/moderation";
-import { Role } from "@prisma/client";
 
 export async function POST(
   req: Request,
@@ -15,22 +14,22 @@ export async function POST(
       return new NextResponse("Unauthorized", { status: 401 });
     }
 
-    const moderatorRole = (session.user as any).role as Role;
+    const moderatorRoles = (session.user as any).roles as string[];
     const commentId = params.id;
 
-    // Fetch comment and user to determine target role
+    // Fetch comment and user to determine target roles
     const comment = await prisma.comment.findUnique({
       where: { id: commentId },
-      include: { user: true },
+      include: { user: { include: { roles: { include: { role: true } } } } },
     });
 
     if (!comment) {
       return new NextResponse("Comment not found", { status: 404 });
     }
 
-    const targetRole = comment.isGuest ? Role.GUEST : (comment.user?.role || Role.GUEST);
+    const targetRoles = comment.isGuest ? ["GUEST"] : (comment.user?.roles.map(r => r.role.name) || ["GUEST"]);
 
-    if (!canModerate(moderatorRole, targetRole)) {
+    if (!canModerate(moderatorRoles, targetRoles)) {
       return new NextResponse("Forbidden: You do not have permission to moderate this user.", { status: 403 });
     }
 

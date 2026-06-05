@@ -2,12 +2,15 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import prisma from "@/lib/prisma";
-import { Role } from "@prisma/client";
+import { getHighestRole, ROLE_HIERARCHY } from "@/lib/permissions";
 
 export async function GET() {
   try {
     const session = await getServerSession(authOptions);
-    if (!session || !["ADMIN", "FACULTY", "STAFF"].includes((session.user as any).role)) {
+    const roles = (session?.user as any)?.roles || [];
+    const highest = getHighestRole(roles);
+    
+    if (!session || ROLE_HIERARCHY[highest] < ROLE_HIERARCHY.FACULTY) {
       return new NextResponse("Unauthorized", { status: 401 });
     }
 

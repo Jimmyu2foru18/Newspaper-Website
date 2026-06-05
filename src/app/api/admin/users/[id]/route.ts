@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import prisma from "@/lib/prisma";
-import { canManageUser } from "@/lib/permissions";
+import { canManageUser, getHighestRole, ROLE_HIERARCHY } from "@/lib/permissions";
 
 export async function DELETE(
   req: Request,
@@ -59,16 +59,31 @@ export async function PATCH(
       return new NextResponse("Forbidden", { status: 403 });
     }
 
-    const { name, roleNames } = await req.json();
+    const { firstName, lastName, roleNames } = await req.json();
 
-    if (name) {
+    const updateData: any = {};
+    if (firstName) updateData.firstName = firstName;
+    if (lastName) updateData.lastName = lastName;
+
+    if (Object.keys(updateData).length > 0) {
         await prisma.user.update({
             where: { id: params.id },
-            data: { name }
+            data: updateData
         });
     }
 
-    if (roleNames) {
+    if (roleNames && roleNames.length > 0) {
+        // Ensure actor can assign ALL requested roles
+        const actorHighest = getHighestRole(actorRoles);
+        const actorLevel = ROLE_HIERARCHY[actorHighest] || 0;
+
+        for (const roleName of roleNames) {
+            const roleLevel = ROLE_HIERARCHY[roleName] || 0;
+            if (roleLevel >= actorLevel && actorHighest !== "SUPER_ADMIN") {
+                return new NextResponse(`Forbidden: Cannot assign role ${roleName}`, { status: 403 });
+            }
+        }
+
         const roles = await prisma.role.findMany({ where: { name: { in: roleNames } } });
         await prisma.userRole.deleteMany({ where: { userId: params.id } });
         await prisma.userRole.createMany({

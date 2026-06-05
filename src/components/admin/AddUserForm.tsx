@@ -3,10 +3,20 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
-export default function AddUserForm() {
+import { ROLE_HIERARCHY, getHighestRole } from "@/lib/permissions";
+
+export default function AddUserForm({ currentUserRoles }: { currentUserRoles: string[] }) {
   const router = useRouter();
   const [formData, setFormData] = useState({ firstName: "", lastName: "", email: "", role: "STUDENT" });
   const [loading, setLoading] = useState(false);
+
+  const actorHighest = getHighestRole(currentUserRoles);
+  const actorLevel = ROLE_HIERARCHY[actorHighest] || 0;
+
+  const availableRoles = Object.keys(ROLE_HIERARCHY).filter(role => {
+    if (actorHighest === "SUPER_ADMIN") return true;
+    return ROLE_HIERARCHY[role] < actorLevel;
+  });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -41,11 +51,9 @@ export default function AddUserForm() {
         </div>
         <input type="email" placeholder="Email" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} className="w-full border p-2 rounded" required />
         <select value={formData.role} onChange={e => setFormData({...formData, role: e.target.value})} className="w-full border p-2 rounded">
-            <option value="STUDENT">Student</option>
-            <option value="STAFF">Staff</option>
-            <option value="FACULTY">Faculty</option>
-            <option value="ADMIN">Admin</option>
-            <option value="SUPER_ADMIN">Super Admin</option>
+            {availableRoles.map(role => (
+                <option key={role} value={role}>{role.charAt(0) + role.slice(1).toLowerCase()}</option>
+            ))}
         </select>
         <button type="submit" disabled={loading} className="bg-primary text-white px-4 py-2 rounded">Add User</button>
     </form>

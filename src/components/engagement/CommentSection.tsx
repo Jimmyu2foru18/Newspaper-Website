@@ -13,7 +13,8 @@ interface Comment {
   guestName: string | null;
   createdAt: string;
   user: {
-    name: string | null;
+    firstName: string | null;
+    lastName: string | null;
     image: string | null;
   } | null;
   replies?: Comment[];
@@ -23,9 +24,10 @@ interface CommentSectionProps {
   articleId?: string;
   videoId?: string;
   paperId?: string;
+  imageId?: string;
 }
 
-export function CommentSection({ articleId, videoId, paperId }: CommentSectionProps) {
+export function CommentSection({ articleId, videoId, paperId, imageId }: CommentSectionProps) {
   const { data: session } = useSession();
   const [comments, setComments] = useState<Comment[]>([]);
   const [content, setContent] = useState("");
@@ -33,11 +35,29 @@ export function CommentSection({ articleId, videoId, paperId }: CommentSectionPr
   const [loading, setLoading] = useState(false);
   const [isAnonymous, setIsAnonymous] = useState(false);
 
+  const canReply = !!session; // Simple auth check for now
+
+  const handleReport = async (commentId: string) => {
+    if (!confirm("Report this comment as inappropriate?")) return;
+    
+    try {
+        const res = await fetch("/api/comments/report", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ commentId, reason: "Inappropriate content" })
+        });
+        if (res.ok) alert("Comment reported.");
+    } catch (err) {
+        alert("Failed to report.");
+    }
+  };
+
   const fetchComments = async () => {
     let url = "/api/comments?";
     if (articleId) url += `articleId=${articleId}`;
     if (videoId) url += `videoId=${videoId}`;
     if (paperId) url += `paperId=${paperId}`;
+    if (imageId) url += `imageId=${imageId}`;
 
     const res = await fetch(url);
     if (res.ok) {
@@ -48,7 +68,7 @@ export function CommentSection({ articleId, videoId, paperId }: CommentSectionPr
 
   useEffect(() => {
     fetchComments();
-  }, [articleId, videoId, paperId]);
+  }, [articleId, videoId, paperId, imageId]);
 
   const handleSubmit = async (e: React.FormEvent, parentId: string | null = null) => {
     e.preventDefault();
@@ -64,6 +84,7 @@ export function CommentSection({ articleId, videoId, paperId }: CommentSectionPr
           articleId,
           videoId,
           paperId,
+          imageId,
           parentId,
           isAnonymous: isAnonymous || !session,
         }),
@@ -89,7 +110,7 @@ export function CommentSection({ articleId, videoId, paperId }: CommentSectionPr
       <div className="flex-1">
         <div className="flex items-center gap-2 mb-1">
           <span className="font-bold text-sm text-gray-900">
-            {comment.isGuest ? comment.guestName : comment.user?.name}
+            {comment.isGuest ? comment.guestName : `${comment.user?.firstName} ${comment.user?.lastName}`}
           </span>
           {comment.isGuest && (
             <span className="text-[10px] bg-gray-100 px-1.5 py-0.5 rounded text-gray-500 font-medium">GUEST</span>
@@ -102,7 +123,7 @@ export function CommentSection({ articleId, videoId, paperId }: CommentSectionPr
           {comment.content}
         </p>
         <div className="flex items-center gap-4">
-          {!isReply && (
+          {canReply && (
             <button 
               onClick={() => setReplyTo(replyTo === comment.id ? null : comment.id)}
               className="text-xs font-bold text-primary flex items-center gap-1 hover:underline"
@@ -111,10 +132,17 @@ export function CommentSection({ articleId, videoId, paperId }: CommentSectionPr
               Reply
             </button>
           )}
-          <button className="text-xs font-bold text-gray-400 flex items-center gap-1 hover:text-red-500 transition-colors">
-            <ShieldAlert className="h-3 w-3" />
-            Report
-          </button>
+          
+          {/* Only Faculty/Admin can see the Report button */}
+          {session?.user && (session.user as any).roles?.some((r: string) => ["FACULTY", "ADMIN", "SUPER_ADMIN"].includes(r)) && (
+            <button 
+              onClick={() => handleReport(comment.id)}
+              className="text-xs font-bold text-gray-400 flex items-center gap-1 hover:text-red-500 transition-colors"
+            >
+              <ShieldAlert className="h-3 w-3" />
+              Report
+            </button>
+          )}
         </div>
 
         {replyTo === comment.id && (

@@ -3,12 +3,19 @@
 import { useState } from "react";
 import UserActions from "@/components/admin/UserActions";
 
-export default function UserTabs({ initialUsers, currentUserRole }: { initialUsers: any[], currentUserRole: string }) {
-  const roles = ["GUEST", "STUDENT", "STAFF", "FACULTY", "ADMIN", "SUPER_ADMIN"];
-  const [activeRole, setActiveRole] = useState(roles[0]);
+import { canManageUser } from "@/lib/permissions";
 
-  const isSuperAdmin = currentUserRole === "SUPER_ADMIN";
-  const isAdmin = currentUserRole === "ADMIN";
+export default function UserTabs({ 
+    initialUsers, 
+    currentUserRoles, 
+    currentUserId 
+}: { 
+    initialUsers: any[], 
+    currentUserRoles: string[], 
+    currentUserId: string 
+}) {
+  const roles = ["GUEST", "STUDENT", "STAFF", "FACULTY", "ADMIN", "SUPER_ADMIN"];
+  const [activeRole, setActiveRole] = useState("STUDENT");
 
   return (
     <div>
@@ -40,15 +47,22 @@ export default function UserTabs({ initialUsers, currentUserRole }: { initialUse
           </thead>
           <tbody>
             {initialUsers
-              .filter((u) => u.role === activeRole)
+              .filter((u) => u.roles.includes(activeRole))
               .map((user) => {
-                const targetIsAdminOrSuper = user.role === "ADMIN" || user.role === "SUPER_ADMIN";
-                const canDelete = isSuperAdmin;
-                const canEdit = isSuperAdmin || (isAdmin && !targetIsAdminOrSuper);
+                const canEdit = canManageUser(
+                    { id: currentUserId, roles: currentUserRoles },
+                    { id: user.id, roles: user.roles },
+                    "update"
+                );
+                const canDelete = canManageUser(
+                    { id: currentUserId, roles: currentUserRoles },
+                    { id: user.id, roles: user.roles },
+                    "delete"
+                );
 
                 return (
                   <tr key={user.id} className="border-t">
-                    <td className="py-3">{user.name}</td>
+                    <td className="py-3">{user.firstName} {user.lastName}</td>
                     <td className="py-3">{user.email}</td>
                     <td className="py-3">
                       <UserActions 

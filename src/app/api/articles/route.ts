@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import prisma from "@/lib/prisma";
-import { canManageContent } from "@/lib/permissions";
+import { canCreateContent, getHighestRole, ROLE_HIERARCHY } from "@/lib/permissions";
 
 function slugify(text: string) {
   return text
@@ -24,14 +24,26 @@ export async function POST(req: Request) {
 
     const user = await prisma.user.findUnique({
       where: { id: (session.user as any).id },
+      include: {
+        roles: {
+          include: {
+            role: true,
+          },
+        },
+      },
     });
 
     if (!user) {
       return new NextResponse("User not found", { status: 404 });
     }
 
+    const userWithRoles = {
+      ...user,
+      roles: user.roles.map((r) => r.role.name),
+    };
+
     // Check if user can create content
-    if (!canManageContent(user, { authorId: user.id }, "create")) {
+    if (!canCreateContent(userWithRoles.roles, "Article")) {
         return new NextResponse("Forbidden", { status: 403 });
     }
 
@@ -44,7 +56,9 @@ export async function POST(req: Request) {
 
     const slug = `${slugify(title)}-${Math.random().toString(36).substring(2, 7)}`;
 
-    const isStudent = user.role === "STUDENT";
+    const highestRole = getHighestRole(userWithRoles.roles);
+    const hasStaffRole = userWithRoles.roles.includes("STAFF");
+    const approvalStatus = (!hasStaffRole && ROLE_HIERARCHY[highestRole] >= ROLE_HIERARCHY.FACULTY) ? "APPROVED" : "PENDING";
 
     const article = await prisma.article.create({
       data: {
@@ -53,7 +67,7 @@ export async function POST(req: Request) {
         featuredImage,
         slug,
         categoryId,
-        published: isStudent ? false : true,
+        approvalStatus,
         authorId: user.id,
       },
     });

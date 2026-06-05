@@ -1,22 +1,31 @@
 import Link from "next/link";
-import { ArrowRight, Newspaper, Video, GraduationCap, Play } from "lucide-react";
+import { ArrowRight, Newspaper, Video, GraduationCap, Play, Image as ImageIcon, Heart } from "lucide-react";
 import prisma from "@/lib/prisma";
 import { format } from "date-fns";
 
 export default async function Home() {
   const latestArticles = await prisma.article.findMany({
-    where: { published: true },
+    where: { approvalStatus: "APPROVED" },
     include: { category: true },
     orderBy: { createdAt: "desc" },
     take: 3,
   });
 
   const latestVideos = await prisma.video.findMany({
-    where: { published: true },
+    where: { approvalStatus: "APPROVED" },
     include: { category: true },
     orderBy: { createdAt: "desc" },
     take: 3,
   });
+
+  const latestImages = (prisma as any).image 
+    ? await (prisma as any).image.findMany({
+        where: { approvalStatus: "APPROVED" },
+        include: { category: true, _count: { select: { likes: true } } },
+        orderBy: { createdAt: "desc" },
+        take: 4,
+      })
+    : [];
 
   return (
     <div className="flex flex-col gap-16 pb-20">
@@ -118,6 +127,39 @@ export default async function Home() {
               </div>
             )}
           </div>
+        </div>
+      </section>
+
+      {/* Latest Photography Section */}
+      <section className="container mx-auto px-4">
+        <div className="flex items-center justify-between mb-10">
+          <h2 className="text-3xl font-bold serif-text text-primary flex items-center gap-3">
+            <ImageIcon className="h-8 w-8 text-primary" />
+            Latest Photography
+          </h2>
+          <Link href="/images" className="text-primary font-bold hover:underline flex items-center gap-2">
+            View Gallery <ArrowRight className="h-4 w-4" />
+          </Link>
+        </div>
+        
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+          {latestImages.map((image) => (
+            <Link key={image.id} href={`/images/${image.slug}`} className="group relative aspect-square bg-gray-100 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all">
+              <img src={image.url} alt={image.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-3 text-white">
+                <p className="text-sm font-bold truncate">{image.title}</p>
+                <div className="flex items-center gap-1 text-xs mt-1">
+                    <Heart className="h-3 w-3 fill-primary text-primary" />
+                    {image._count.likes}
+                </div>
+              </div>
+            </Link>
+          ))}
+          {latestImages.length === 0 && (
+            <div className="col-span-4 py-12 text-center border-2 border-dashed rounded-xl text-gray-400 italic">
+              Our photographers are out in the field! 📸
+            </div>
+          )}
         </div>
       </section>
 
