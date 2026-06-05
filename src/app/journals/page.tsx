@@ -9,7 +9,15 @@ export default async function JournalsPage() {
       published: true,
     },
     include: {
-      author: true,
+      author: {
+        include: {
+          roles: {
+            include: {
+              role: true,
+            },
+          },
+        },
+      },
       category: true,
     },
     orderBy: {
@@ -61,9 +69,9 @@ export default async function JournalsPage() {
                   </h2>
                   <div className="flex items-center gap-3 mb-6">
                     <div className="h-8 w-8 rounded-full bg-primary/5 flex items-center justify-center text-primary text-sm font-bold">
-                      {paper.author.name?.charAt(0)}
+                      {paper.author.firstName?.charAt(0)}
                     </div>
-                    <span className="text-sm font-medium text-gray-700">{paper.author.name}</span>
+                    <span className="text-sm font-medium text-gray-700">{paper.author.firstName} {paper.author.lastName}</span>
                   </div>
                   <div className="bg-gray-50 p-6 rounded-lg mb-6">
                     <h3 className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-2">Abstract</h3>

@@ -16,7 +16,15 @@ export default async function VideoPage({ params }: VideoPageProps) {
   const video = await prisma.video.findUnique({
     where: { slug },
     include: {
-      author: true,
+      author: {
+        include: {
+          roles: {
+            include: {
+              role: true,
+            },
+          },
+        },
+      },
       category: true,
     },
   });
@@ -65,7 +73,7 @@ export default async function VideoPage({ params }: VideoPageProps) {
                 <div className="h-8 w-8 rounded-full bg-gray-100 flex items-center justify-center">
                   <UserIcon className="h-4 w-4" />
                 </div>
-                <span className="font-medium text-gray-900">{video.author.name}</span>
+                <span className="font-medium text-gray-900">{video.author.firstName} {video.author.lastName}</span>
               </div>
               <div className="flex items-center gap-2">
                 <Calendar className="h-4 w-4" />

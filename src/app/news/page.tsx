@@ -8,7 +8,15 @@ export default async function NewsPage() {
       published: true,
     },
     include: {
-      author: true,
+      author: {
+        include: {
+          roles: {
+            include: {
+              role: true,
+            },
+          },
+        },
+      },
       category: true,
     },
     orderBy: {
@@ -67,7 +75,7 @@ export default async function NewsPage() {
                 </p>
                 <div className="flex items-center gap-2 pt-4 border-t">
                   <div className="h-6 w-6 rounded-full bg-gray-200" />
-                  <span className="text-xs font-medium text-gray-700">By {article.author.name}</span>
+                  <span className="text-xs font-medium text-gray-700">By {article.author.firstName} {article.author.lastName}</span>
                 </div>
               </div>
             </Link>

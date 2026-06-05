@@ -9,7 +9,15 @@ export default async function VideosPage() {
       published: true,
     },
     include: {
-      author: true,
+      author: {
+        include: {
+          roles: {
+            include: {
+              role: true,
+            },
+          },
+        },
+      },
       category: true,
     },
     orderBy: {
@@ -83,7 +91,7 @@ export default async function VideosPage() {
                 <div className="flex items-center justify-between pt-4 border-t">
                   <div className="flex items-center gap-2">
                     <div className="h-6 w-6 rounded-full bg-gray-200" />
-                    <span className="text-xs font-medium text-gray-700">{video.author.name}</span>
+                    <span className="text-xs font-medium text-gray-700">{video.author.firstName} {video.author.lastName}</span>
                   </div>
                   <Link 
                     href={video.url} 
