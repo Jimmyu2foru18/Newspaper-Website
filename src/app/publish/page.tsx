@@ -16,10 +16,10 @@ export default function PublishPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
   
-  const userRole = (session?.user as any)?.role;
-  const isStudent = userRole === "STUDENT";
+  const userRoles = (session?.user as any)?.roles || [];
+  const isStudent = userRoles.includes("STUDENT");
   
-  const [publishType, setPublishType] = useState<"article" | "video" | "paper">(isStudent ? "paper" : "article"); // Actually need to hide this entirely for students if possible or default differently.
+  const [publishType, setPublishType] = useState<"article" | "video" | "paper">(isStudent ? "paper" : "article");
 
   // ... (in return)
       {/* Tabs - Only show for non-students */}
@@ -346,6 +346,7 @@ export default function PublishPage() {
           </div>
         )}
 
+        {!isStudent && (
         <div className="flex justify-end gap-4 pt-4 border-t">
           <button
             type="button"
@@ -362,6 +363,7 @@ export default function PublishPage() {
             {loading ? "Publishing..." : `Publish ${publishType === "article" ? "Article" : publishType === "video" ? "Video" : "Paper"}`}
           </button>
         </div>
+        )}
       </form>
     </div>
   );
