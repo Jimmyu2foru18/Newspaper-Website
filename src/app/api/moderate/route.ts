@@ -47,6 +47,11 @@ export async function POST(req: Request) {
         where: { id },
         data: { published: action === "approve" },
       });
+    } else if (type === "comment") {
+      await prisma.comment.update({
+        where: { id },
+        data: { status: action === "approve" ? "APPROVED" : "REJECTED" },
+      });
     }
 
     return new NextResponse(`Content ${action}d successfully`, { status: 200 });

@@ -3,6 +3,7 @@ import { authOptions } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import prisma from "@/lib/prisma";
 import UserTabs from "@/components/admin/UserTabs";
+import CommentModeration from "@/components/admin/CommentModeration";
 
 export default async function ProfilePage() {
   const session = await getServerSession(authOptions);
@@ -16,7 +17,7 @@ export default async function ProfilePage() {
     include: { profile: true }
   });
 
-  const allUsers = user?.role === "ADMIN" 
+  const allUsers = user?.role === "ADMIN" || user?.role === "SUPER_ADMIN"
     ? await prisma.user.findMany({ orderBy: { role: 'asc' } })
     : [];
 
@@ -37,6 +38,10 @@ export default async function ProfilePage() {
           <h2 className="text-2xl font-bold mb-4">Admin Management Dashboard</h2>
           <UserTabs initialUsers={allUsers} currentUserRole={user.role} />
         </div>
+      )}
+
+      {(user?.role === "ADMIN" || user?.role === "FACULTY" || user?.role === "STAFF") && (
+        <CommentModeration />
       )}
     </div>
   );
