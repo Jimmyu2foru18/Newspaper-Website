@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { RichTextEditor } from "@/components/editor/RichTextEditor";
 import { cn } from "@/lib/utils";
+import FileUpload from "@/components/ui/FileUpload";
 
 interface Category {
   id: string;
@@ -92,7 +93,10 @@ export default function PublishPage() {
       if (publishType === "paper") endpoint = "/api/papers";
 
       let body: any = { title, categoryId };
-      if (publishType === "article") body.content = content;
+      if (publishType === "article") {
+          body.content = content;
+          body.featuredImage = featuredImage;
+      }
       if (publishType === "video") {
         body.description = description;
         body.url = videoUrl;
