@@ -5,6 +5,7 @@ import prisma from "@/lib/prisma";
 import UserTabs from "@/components/admin/UserTabs";
 import CommentModeration from "@/components/admin/CommentModeration";
 import StudentPostForm from "@/components/student/StudentPostForm";
+import AddUserForm from "@/components/admin/AddUserForm";
 import Link from "next/link";
 
 export default async function ProfilePage() {
@@ -56,6 +57,7 @@ export default async function ProfilePage() {
       {(userRoles.includes("ADMIN") || userRoles.includes("SUPER_ADMIN")) && (
         <div className="mt-8">
           <h2 className="text-2xl font-bold mb-4">Admin Management Dashboard</h2>
+          {userRoles.includes("SUPER_ADMIN") && <AddUserForm />}
           <UserTabs initialUsers={allUsersWithRoles} currentUserRoles={userRoles} />
         </div>
       )}
