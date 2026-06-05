@@ -4,20 +4,25 @@ const bcrypt = require("bcryptjs");
 const prisma = new PrismaClient();
 
 async function main() {
-  const roles = ["ADMIN", "EDITOR", "STUDENT", "GUEST"];
+  const roles = [
+    { role: "ADMIN", email: "admin@oldwestbury.edu" },
+    { role: "EDITOR", email: "editor@oldwestbury.edu" },
+    { role: "FACULTY", email: "faculty@oldwestbury.edu" },
+    { role: "STUDENT", email: "student@oldwestbury.edu" },
+    { role: "GUEST", email: "guest@oldwestbury.edu" }
+  ];
   
-  for (const role of roles) {
-    const email = `${role.toLowerCase()}@test.com`;
+  for (const { role, email } of roles) {
     const password = await bcrypt.hash("password123", 10);
     
     await prisma.user.upsert({
       where: { email },
-      update: {},
+      update: { password, role },
       create: {
         name: `${role.charAt(0) + role.slice(1).toLowerCase()} User`,
         email,
         password,
-        role,
+        role: role,
       },
     });
   }
@@ -39,7 +44,7 @@ async function main() {
     });
   }
 
-  console.log("Seeded database successfully with roles and categories.");
+  console.log("Seeded database successfully with Faculty role and @oldwestbury.edu emails.");
 }
 
 main()

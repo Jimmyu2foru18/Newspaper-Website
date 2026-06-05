@@ -13,6 +13,7 @@ datasource db {
 enum Role {
   GUEST
   STUDENT
+  FACULTY
   CATALYST_MEMBER
   EDITOR
   ADMIN
