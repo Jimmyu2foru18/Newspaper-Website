@@ -1,4 +1,4 @@
-# Part 4: Launching Locally
+# Part 7: Launching Locally
 
 It's time to see your project in action!
 
@@ -20,4 +20,4 @@ npm run dev
 - **Publishing:** If you logged in as Admin/Editor, you will see a "Publish" button.
 - **Explore:** Click through News, Videos, and Journals to verify everything is linked.
 
-If everything works, you are ready to prepare for [Part 5](part-5-deployment.md).
+If everything works, you are ready to prepare for [Part 8: CMS](08-cms.md).

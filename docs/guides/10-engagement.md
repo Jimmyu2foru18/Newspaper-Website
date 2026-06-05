@@ -1,4 +1,4 @@
-# Part 6: Engagement & Search
+# Part 10: Engagement & Search
 
 This section builds community interaction.
 
@@ -52,3 +52,6 @@ export async function GET(req: Request) {
 **The Breakdown:**
 *   `Promise.all([...])`: This runs all three database searches at the exact same time, making search incredibly fast.
 *   `{ contains: query }`: This tells Prisma to find any item where the title *includes* the word the user typed.
+
+---
+Finally, let's wrap up with [Part 11: Final Deployment](11-final-deployment.md).

@@ -1,4 +1,4 @@
-# Part 2: Initializing the Project
+# Part 3: Initializing the Project
 
 Now that you have your tools, let's bring the code to life.
 
@@ -20,4 +20,4 @@ You will see three main folders:
 - `src/components`: Contains reusable parts (like the Navbar or Footer).
 - `prisma`: Contains the blueprint for your database.
 
-You are now ready to set up the backend in [Part 3](part-3-database-auth.md).
+You are now ready to set up the backend in [Part 4: Database](04-db.md).

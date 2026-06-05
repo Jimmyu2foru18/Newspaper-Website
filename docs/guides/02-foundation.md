@@ -30,4 +30,4 @@ To "code it" yourself:
 5. Save it. You have just created a functional component!
 
 ---
-Let's move on to [Part 3: database-auth](part-3-database-auth.md) to understand how to put it all together.
+Let's move on to [Part 3: Initialization](03-initialization.md) to understand how to put it all together.

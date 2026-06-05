@@ -1,4 +1,4 @@
-# Part 5: CMS Implementation
+# Part 8: CMS Implementation
 
 This step gives users the ability to create content.
 
@@ -71,3 +71,6 @@ export default function PublishPage() {
 *   `useState()`: Tracks the data the user types into the form.
 *   `fetch()`: Sends the data to your server/API route.
 *   `onChange`: This is a "prop" that passes the text from the editor back up to the form component.
+
+---
+Now that you have your CMS, let's learn how to deploy in [Part 9: Deployment](09-deployment.md).

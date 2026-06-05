@@ -26,4 +26,4 @@ We need a place to store data (articles, videos). Docker helps us run a professi
 - **Install:** Follow the instructions. **Important:** When installed, keep Docker Desktop open while you are coding.
 
 ---
-You have now set up your tools. Let's move on to [Part 2: Project Anatomy](part-2-foundation.md) to understand how to put it all together.
+You have now set up your tools. Let's move on to [Part 2: Project Anatomy](02-foundation.md) to understand how to put it all together.

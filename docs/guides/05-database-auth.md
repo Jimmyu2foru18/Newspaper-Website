@@ -1,4 +1,4 @@
-# Part 3: Database & Authentication
+# Part 5: Database & Authentication
 
 This step links your project to a database and enables user logins.
 
@@ -25,4 +25,4 @@ npx prisma db push
 npx prisma db seed
 ```
 
-You are now ready to launch in [Part 4](part-4-launching.md).
+You are now ready to launch in [Part 6: Authentication](06-auth.md).

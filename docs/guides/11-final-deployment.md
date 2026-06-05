@@ -1,4 +1,4 @@
-# Part 7: Deployment
+# Part 11: Deployment
 
 Your website is currently sitting on your computer. To make it available on the internet, you need to "host" it.
 
@@ -21,5 +21,3 @@ You cannot use the Docker container on your computer for the live site because t
 1. **GitHub:** Push your code to a public or private GitHub repository.
 2. **Import:** Connect your GitHub to your Vercel account.
 3. **Deploy:** Click "Deploy." Vercel will build your code and give you a public URL.
-
----

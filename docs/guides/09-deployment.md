@@ -1,4 +1,4 @@
-# Part 5: Deployment
+# Part 9: Deployment
 
 When you are ready to share the Catalyst with the world, you need a hosting provider.
 
@@ -22,4 +22,4 @@ You cannot use `localhost` for a live website. You will need a cloud database.
 - Click **Deploy** in the Vercel dashboard.
 - Vercel will build your project and provide a public URL for your platform.
 
-Congratulations, you have built and deployed a professional digital publishing platform!
+Congratulations! Now let's enhance it with [Part 10: Engagement & Search](10-engagement.md).

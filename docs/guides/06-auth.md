@@ -1,4 +1,4 @@
-# Part 4: The Master Blueprint (Auth & UI)
+# Part 6: The Master Blueprint (Auth & UI)
 
 Before users interact, we need a secure entry and a consistent look.
 
@@ -62,3 +62,6 @@ export default function RootLayout({ children }) {
 }
 ```
 *Why:* By putting the header here, you only have to write it once, and it instantly applies to every page on your site.
+
+---
+Now that you have your UI and Auth set up, let's learn how to launch in [Part 7: Launching](07-launching.md).
