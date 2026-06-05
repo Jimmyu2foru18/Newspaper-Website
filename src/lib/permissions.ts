@@ -1,33 +1,56 @@
-import { Role } from "@prisma/client";
+export const hasRole = (roles: { role: { name: string } }[], roleName: string): boolean => {
+  return roles.some(r => r.role.name === roleName);
+};
 
-export const canManageUser = (actorRole: Role, targetRole: Role): boolean => {
-  if (actorRole === Role.SUPER_ADMIN) return true;
-  if (actorRole === Role.ADMIN) return targetRole !== Role.ADMIN && targetRole !== Role.SUPER_ADMIN;
-  if (actorRole === Role.FACULTY) return targetRole === Role.STAFF || targetRole === Role.STUDENT;
+export const canManageUser = (
+  actor: { id: string; roles: string[] },
+  target: { id: string; roles: string[] },
+  action: "create" | "update" | "delete"
+): boolean => {
+  const actorRoles = actor.roles;
+  const targetRoles = target.roles;
+  const isTargetAdminOrSuper = targetRoles.includes("ADMIN") || targetRoles.includes("SUPER_ADMIN");
+
+  // Rule 1: Super Admin can manage all, but cannot delete self
+  if (actorRoles.includes("SUPER_ADMIN")) {
+    if (action === "delete" && actor.id === target.id) return false;
+    return true;
+  }
+
+  // Rule 2: Admin can manage all EXCEPT Admins and Super Admins
+  if (actorRoles.includes("ADMIN")) {
+    return !isTargetAdminOrSuper;
+  }
+
+  // Rule 3: Faculty can manage Staff and Students
+  if (actorRoles.includes("FACULTY")) {
+    return targetRoles.includes("STAFF") || targetRoles.includes("STUDENT");
+  }
+  
   return false;
 };
 
 export const canCreateContent = (
-  actor: { role: Role },
+  actorRoles: string[],
   contentType: "Article" | "Video" | "ResearchPaper" | "StudentPost"
 ): boolean => {
-  if (actor.role === Role.SUPER_ADMIN || actor.role === Role.ADMIN || actor.role === Role.FACULTY) return true;
-  if (actor.role === Role.STAFF) return contentType !== "ResearchPaper";
-  if (actor.role === Role.STUDENT) return contentType === "StudentPost";
+  if (actorRoles.includes("SUPER_ADMIN") || actorRoles.includes("ADMIN") || actorRoles.includes("FACULTY")) return true;
+  if (actorRoles.includes("STAFF")) return contentType !== "ResearchPaper";
+  if (actorRoles.includes("STUDENT")) return contentType === "StudentPost";
   
   return false;
 };
 
 export const canManageContent = (
-  actor: { id: string; role: Role },
+  actor: { id: string; roles: string[] },
   content: { authorId: string },
   action: "create" | "update" | "delete"
 ): boolean => {
-  if (actor.role === Role.SUPER_ADMIN) return true;
-  if (actor.role === Role.ADMIN && content.authorId !== "ADMIN" /* TODO: fix content author check */) return true;
-  if (actor.role === Role.FACULTY) return true; // Assuming Faculty can manage all academic content
-  if (actor.role === Role.STAFF) return content.authorId === actor.id;
-  if (actor.role === Role.STUDENT) return content.authorId === actor.id;
+  if (actor.roles.includes("SUPER_ADMIN")) return true;
+  if (actor.roles.includes("ADMIN") && content.authorId !== "ADMIN") return true;
+  if (actor.roles.includes("FACULTY")) return true;
+  if (actor.roles.includes("STAFF")) return content.authorId === actor.id;
+  if (actor.roles.includes("STUDENT")) return content.authorId === actor.id;
   
   return false;
 };

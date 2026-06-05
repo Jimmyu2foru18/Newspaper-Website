@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import prisma from "@/lib/prisma";
+import { canManageUser } from "@/lib/permissions";
 
 export async function DELETE(
   req: Request,
@@ -9,12 +10,25 @@ export async function DELETE(
 ) {
   try {
     const session = await getServerSession(authOptions);
-    if (!session || (session.user as any).role !== "SUPER_ADMIN") {
-      return new NextResponse("Unauthorized", { status: 401 });
+    if (!session) return new NextResponse("Unauthorized", { status: 401 });
+
+    const actorId = (session.user as any).id;
+    const actorRoles = (session.user as any).roles;
+    
+    const targetUser = await prisma.user.findUnique({ 
+        where: { id: params.id },
+        include: { roles: { include: { role: true } } }
+    });
+    
+    if (!targetUser) return new NextResponse("User not found", { status: 404 });
+    
+    const targetRoles = targetUser.roles.map(r => r.role.name);
+
+    if (!canManageUser({ id: actorId, roles: actorRoles }, { id: targetUser.id, roles: targetRoles }, "delete")) {
+      return new NextResponse("Forbidden", { status: 403 });
     }
 
-    const userId = params.id;
-    await prisma.user.delete({ where: { id: userId } });
+    await prisma.user.delete({ where: { id: params.id } });
 
     return new NextResponse("User deleted successfully", { status: 200 });
   } catch (error) {
@@ -28,33 +42,39 @@ export async function PATCH(
 ) {
   try {
     const session = await getServerSession(authOptions);
-    if (!session) {
-      return new NextResponse("Unauthorized", { status: 401 });
-    }
+    if (!session) return new NextResponse("Unauthorized", { status: 401 });
 
-    const targetUser = await prisma.user.findUnique({ where: { id: params.id } });
-    const actorRole = (session.user as any).role;
+    const targetUser = await prisma.user.findUnique({ 
+        where: { id: params.id },
+        include: { roles: { include: { role: true } } }
+    });
+    
+    if (!targetUser) return new NextResponse("User not found", { status: 404 });
 
-    if (!targetUser) {
-      return new NextResponse("User not found", { status: 404 });
-    }
+    const actorId = (session.user as any).id;
+    const actorRoles = (session.user as any).roles;
+    const targetRoles = targetUser.roles.map(r => r.role.name);
 
-    // Only allow PATCH if:
-    // 1. Actor is SUPER_ADMIN
-    // 2. Actor is ADMIN and target is not ADMIN or SUPER_ADMIN
-    const canPatch = actorRole === "SUPER_ADMIN" || 
-      (actorRole === "ADMIN" && targetUser.role !== "ADMIN" && targetUser.role !== "SUPER_ADMIN");
-
-    if (!canPatch) {
+    if (!canManageUser({ id: actorId, roles: actorRoles }, { id: targetUser.id, roles: targetRoles }, "update")) {
       return new NextResponse("Forbidden", { status: 403 });
     }
 
-    const { name, role } = await req.json();
+    const { name, roleNames } = await req.json();
 
-    await prisma.user.update({
-      where: { id: params.id },
-      data: { name, role }
-    });
+    if (name) {
+        await prisma.user.update({
+            where: { id: params.id },
+            data: { name }
+        });
+    }
+
+    if (roleNames) {
+        const roles = await prisma.role.findMany({ where: { name: { in: roleNames } } });
+        await prisma.userRole.deleteMany({ where: { userId: params.id } });
+        await prisma.userRole.createMany({
+            data: roles.map(r => ({ userId: params.id, roleId: r.id }))
+        });
+    }
 
     return new NextResponse("User updated successfully", { status: 200 });
   } catch (error) {
