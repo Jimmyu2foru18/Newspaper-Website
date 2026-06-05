@@ -11,6 +11,8 @@ export default async function PublicProfilePage({ params }: { params: { id: stri
     include: { 
         profile: true,
         articles: { where: { published: true } },
+        videos: { where: { published: true } },
+        papers: { where: { published: true } },
     },
   });
 
@@ -39,13 +41,27 @@ export default async function PublicProfilePage({ params }: { params: { id: stri
         )}
       </div>
 
-      <h2 className="text-2xl font-bold mb-4">Posts</h2>
+      <h2 className="text-2xl font-bold mb-4">Content</h2>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {user.articles.map(article => (
             <div key={article.id} className="border p-4 rounded-lg">
+                <span className="text-xs text-primary font-bold">ARTICLE</span>
                 <h3 className="font-bold text-lg">{article.title}</h3>
-                <p className="text-sm text-gray-600 line-clamp-2">{article.excerpt}</p>
                 <Link href={`/news/${article.slug}`} className="text-primary hover:underline text-sm mt-2 block">Read more</Link>
+            </div>
+        ))}
+        {user.videos.map(video => (
+            <div key={video.id} className="border p-4 rounded-lg">
+                <span className="text-xs text-primary font-bold">VIDEO</span>
+                <h3 className="font-bold text-lg">{video.title}</h3>
+                <a href={video.url} target="_blank" className="text-primary hover:underline text-sm mt-2 block">Watch</a>
+            </div>
+        ))}
+        {user.papers.map(paper => (
+            <div key={paper.id} className="border p-4 rounded-lg">
+                <span className="text-xs text-primary font-bold">PAPER</span>
+                <h3 className="font-bold text-lg">{paper.title}</h3>
+                <Link href={`/journals/${paper.slug}`} className="text-primary hover:underline text-sm mt-2 block">Read</Link>
             </div>
         ))}
       </div>
