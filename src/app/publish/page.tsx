@@ -26,6 +26,7 @@ export default function PublishPage() {
 
   // Article state
   const [content, setContent] = useState("");
+  const [featuredImage, setFeaturedImage] = useState("");
 
   // Video state
   const [videoUrl, setVideoUrl] = useState("");
@@ -216,14 +217,23 @@ export default function PublishPage() {
         </div>
 
         {publishType === "article" && (
-          <div className="space-y-2">
-            <label className="text-sm font-semibold text-gray-700">
-              Content
-            </label>
-            <RichTextEditor 
-              content={content} 
-              onChange={setContent} 
-            />
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <label className="text-sm font-semibold text-gray-700">
+                Featured Image
+              </label>
+              {featuredImage && <img src={featuredImage} alt="Featured" className="w-full h-48 object-cover rounded-md mb-2" />}
+              <FileUpload onUpload={setFeaturedImage} />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-semibold text-gray-700">
+                Content
+              </label>
+              <RichTextEditor 
+                content={content} 
+                onChange={setContent} 
+              />
+            </div>
           </div>
         )}
 
@@ -244,17 +254,11 @@ export default function PublishPage() {
               />
             </div>
             <div className="space-y-2">
-              <label htmlFor="thumbnailUrl" className="text-sm font-semibold text-gray-700">
-                Thumbnail URL (Optional)
+              <label className="text-sm font-semibold text-gray-700">
+                Thumbnail
               </label>
-              <input
-                id="thumbnailUrl"
-                type="url"
-                placeholder="https://..."
-                className="w-full px-4 py-2 rounded-lg border focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
-                value={thumbnailUrl}
-                onChange={(e) => setThumbnailUrl(e.target.value)}
-              />
+              {thumbnailUrl && <img src={thumbnailUrl} alt="Thumbnail" className="w-full h-48 object-cover rounded-md mb-2" />}
+              <FileUpload onUpload={setThumbnailUrl} />
             </div>
             <div className="space-y-2">
               <label htmlFor="description" className="text-sm font-semibold text-gray-700">
@@ -290,17 +294,11 @@ export default function PublishPage() {
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
-                <label htmlFor="pdfUrl" className="text-sm font-semibold text-gray-700">
-                  PDF URL
+                <label className="text-sm font-semibold text-gray-700">
+                  PDF File
                 </label>
-                <input
-                  id="pdfUrl"
-                  type="url"
-                  placeholder="Link to your PDF document..."
-                  className="w-full px-4 py-2 rounded-lg border focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
-                  value={pdfUrl}
-                  onChange={(e) => setPdfUrl(e.target.value)}
-                />
+                {pdfUrl && <p className="text-sm text-primary mb-2">Uploaded: {pdfUrl}</p>}
+                <FileUpload onUpload={setPdfUrl} />
               </div>
               <div className="space-y-2">
                 <label htmlFor="citation" className="text-sm font-semibold text-gray-700">
