@@ -1,57 +1,19 @@
-# Part 10: Engagement & Search
+# Guide 10: Engagement System
 
-This section builds community interaction.
+## Overview
+Catalyst supports interactive engagement across Articles, Videos, Images, and Research Papers.
 
-### 1. Comment System (`src/components/engagement/CommentSection.tsx`)
-We want to allow threaded discussions. This means a comment can have *replies*.
+## Commenting
+- **Authenticated Users**: Comments are linked to the user account, displaying their first and last name.
+- **Anonymous Comments**: Users can select "Post anonymously". If unauthenticated, they are automatically treated as guests, assigned a generated guest identifier (e.g., "Guest 123"), and marked as `isGuest: true`.
+- **Reporting**: Faculty, Admins, and Super Admins can report inappropriate comments via the `ShieldAlert` icon.
 
-**The Database Concept:**
-In `schema.prisma`, our `Comment` model has a `parentId` that points to another `Comment`. This creates a tree structure.
+## Like System
+- Authenticated users can toggle "Like" on any piece of multimedia content.
+- The engagement count updates in real-time, reflecting total likes from the student body and faculty.
 
-**How to code the Form:**
-```tsx
-export function CommentSection({ articleId }) {
-  const [content, setContent] = useState("");
-
-  const postComment = async () => {
-    await fetch("/api/comments", {
-      method: "POST",
-      body: JSON.stringify({ content, articleId }),
-    });
-  };
-
-  return (
-    <form onSubmit={postComment}>
-      <textarea value={content} onChange={(e) => setContent(e.target.value)} />
-      <button type="submit">Post Comment</button>
-    </form>
-  );
-}
-```
-
-### 2. Search Engine (`src/app/api/search/route.ts`)
-Search needs to look into multiple database tables.
-
-**The Code:**
-```tsx
-export async function GET(req: Request) {
-  const { searchParams } = new URL(req.url);
-  const query = searchParams.get("q");
-
-  // Search through all three models simultaneously
-  const [articles, videos, papers] = await Promise.all([
-    prisma.article.findMany({ where: { title: { contains: query } } }),
-    prisma.video.findMany({ where: { title: { contains: query } } }),
-    prisma.researchPaper.findMany({ where: { title: { contains: query } } }),
-  ]);
-
-  return NextResponse.json({ articles, videos, papers });
-}
-```
-
-**The Breakdown:**
-*   `Promise.all([...])`: This runs all three database searches at the exact same time, making search incredibly fast.
-*   `{ contains: query }`: This tells Prisma to find any item where the title *includes* the word the user typed.
-
----
-Finally, let's wrap up with [Part 11: Final Deployment](11-final-deployment.md).
+## Moderation
+- Faculty and Admins can view reported comments in the "Reported Comments" section of the Editorial Dashboard.
+- **Actions**:
+    - **Delete Comment**: Permanently removes the comment from the database.
+    - **Ignore**: Deletes only the report record, leaving the comment visible.

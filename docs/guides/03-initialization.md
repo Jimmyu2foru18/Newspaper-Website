@@ -1,23 +1,15 @@
-# Part 3: Initializing the Project
+# Guide 03: Platform Initialization
 
-Now that you have your tools, let's bring the code to life.
+## Seeding
+To initialize roles and core users, use the provided seed script:
+```bash
+node prisma/seed.js
+```
+*Note*: The seed script ensures that the `Role` table is populated correctly, which is required for user registration and role-based access control.
 
-### 1. Download the Project
-- Open your terminal.
-- Navigate to the folder where you want to keep your project.
-- If you are building from scratch, use the `npx create-next-app` command as shown in your original project instructions.
-
-### 2. Install Project Dependencies
-These are the building blocks of the platform (like UI components, database tools, etc.).
-- In your terminal, inside the project folder, run:
-  ```bash
-  npm install --legacy-peer-deps
-  ```
-
-### 3. Folder Structure
-You will see three main folders:
-- `src/app`: Contains the pages of your website.
-- `src/components`: Contains reusable parts (like the Navbar or Footer).
-- `prisma`: Contains the blueprint for your database.
-
-You are now ready to set up the backend in [Part 4: Database](04-db.md).
+## Initial Database Sync
+After changing the schema, always synchronize your local database:
+```bash
+npx prisma migrate dev --name <migration-name>
+```
+This applies the migration SQL files and updates the Prisma Client.

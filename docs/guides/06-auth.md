@@ -1,67 +1,22 @@
-# Part 6: The Master Blueprint (Auth & UI)
+# Guide 06: Authentication and Role-Based Access Control (RBAC)
 
-Before users interact, we need a secure entry and a consistent look.
+## Overview
+The Catalyst platform utilizes a hierarchical role-based access control system to manage user permissions and access.
 
-### 1. The Header Component (The Navigation Bar)
-Create `src/components/layout/Header.tsx`. This component handles the logo, navigation links, and login/logout state.
+## Numeric User IDs
+All User IDs follow a mandatory numeric string format: `70xxxxxxx` (e.g., `700000001`). This format is generated sequentially upon registration using `getNextStudentId()` in `src/lib/utils.ts`.
 
-**How to code it:**
-```tsx
-"use client"; // Required for interactivity like hooks
+## Role Hierarchy
+Permissions are enforced using a strict hierarchy defined in `src/lib/permissions.ts`. Access levels are determined by the highest role held by a user:
 
-import Link from "next/link";
-import { useSession, signOut } from "next-auth/react";
+| Role | Level | Capability |
+| :--- | :--- | :--- |
+| `SUPER_ADMIN` | 5 | Full system control; Manage all users and content. |
+| `ADMIN` | 4 | Manage all users/content; Approve/Reject moderation actions. |
+| `FACULTY` | 3 | Manage assigned Staff/Students; Approve/Reject content; Upload content. |
+| `STAFF` | 2 | Upload content (requires Faculty approval); Edit personal content. |
+| `STUDENT` | 1 | Submit posts for Faculty review; Comment on content. |
+| `GUEST` | 0 | Browse approved content; Comment as "Guest". |
 
-export function Header() {
-  const { data: session } = useSession(); // 1. Check if user is logged in
-
-  return (
-    <header className="border-b bg-white p-4 flex justify-between items-center">
-      <Link href="/" className="font-bold text-primary text-xl">OW CATALYST</Link>
-      <nav className="flex gap-4">
-        <Link href="/news">News</Link>
-        {session ? (
-          <>
-            {/* 2. Admin/Editor only button */}
-            {(session.user as any).role === "ADMIN" && <Link href="/publish">Publish</Link>}
-            <button onClick={() => signOut()}>Sign Out</button>
-          </>
-        ) : (
-          <Link href="/login">Sign In</Link>
-        )}
-      </nav>
-    </header>
-  );
-}
-```
-**The Breakdown:**
-*   `"use client"`: Tells Next.js this file uses interactive features.
-*   `useSession()`: A hook that fetches the current user's login state.
-*   `{session ? ... : ...}`: This is a "ternary operator"—a shortcut for saying "If logged in, show this; otherwise, show that."
-
----
-### 2. The Layout Wrapper
-Open `src/app/layout.tsx`. This file wraps every single page in your app.
-
-**How to code it:**
-1. Import your `Header`, `Footer`, and `SessionProvider`.
-2. Wrap the `{children}` (the current page content) with these providers.
-```tsx
-export default function RootLayout({ children }) {
-  return (
-    <html>
-      <body>
-        <SessionProvider>
-          <Header />
-          <main>{children}</main>
-          <Footer />
-        </SessionProvider>
-      </body>
-    </html>
-  );
-}
-```
-*Why:* By putting the header here, you only have to write it once, and it instantly applies to every page on your site.
-
----
-Now that you have your UI and Auth set up, let's learn how to launch in [Part 7: Launching](07-launching.md).
+## Authentication Flow
+The system uses `next-auth` with a `PrismaAdapter`. Authentication persists user roles in the session token, which are subsequently checked by the `canManageContent`, `canApproveContent`, and `canManageUser` utility functions.

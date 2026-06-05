@@ -1,29 +1,20 @@
-# Part 1: Setting Up Your Workbench
+# Guide 01: Environment Setup
 
-Before we build the Catalyst, we need to set up your computer to understand our "languages."
+## Prerequisites
+- Node.js (v20+)
+- PostgreSQL Database
+- Git
 
-### What is a Terminal?
-You will see instructions to "run commands in your terminal." 
-- **What it is:** A text-based way to tell your computer to do things, instead of clicking icons. 
-- **How to open it:** 
-  - **Windows:** Click the Start menu, type `powershell` or `cmd`, and press Enter. A black (or blue) window will appear. This is your command center.
+## Environment Variables
+Create a `.env` file in the root directory:
+```bash
+DATABASE_URL="postgresql://user:password@localhost:5432/catalyst?schema=public"
+NEXTAUTH_SECRET="your-super-secret-random-string"
+NEXTAUTH_URL="http://localhost:3000"
+```
 
-### 1. Install Node.js (The Engine)
-Node.js lets your computer execute JavaScript, which is the language that runs our website.
-- **Download:** Go to [nodejs.org](https://nodejs.org/).
-- **Click:** Select the **LTS (Long Term Support)** button.
-- **Install:** Run the file you downloaded, follow the prompts, and restart your terminal (close and reopen it).
-- **Check it:** Type `node -v` in your terminal. If it returns a number (like `v22.x.x`), you're ready!
-
-### 2. Install Visual Studio Code (The Workshop)
-This is where you will write and edit the Catalyst’s code.
-- **Download:** Go to [code.visualstudio.com](https://code.visualstudio.com/).
-- **Install:** Follow the default installation steps.
-
-### 3. Install Docker Desktop (The Filing Cabinet)
-We need a place to store data (articles, videos). Docker helps us run a professional database system on your machine without you needing to manually configure it.
-- **Download:** Go to [docker.com/products/docker-desktop/](https://www.docker.com/products/docker-desktop/).
-- **Install:** Follow the instructions. **Important:** When installed, keep Docker Desktop open while you are coding.
-
----
-You have now set up your tools. Let's move on to [Part 2: Project Anatomy](02-foundation.md) to understand how to put it all together.
+## Setup Instructions
+1. Install dependencies: `npm install`
+2. Initialize database: `npx prisma db push`
+3. Seed roles and initial users: `node prisma/seed.js`
+4. Start development server: `npm run dev`

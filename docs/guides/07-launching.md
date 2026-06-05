@@ -1,23 +1,14 @@
-# Part 7: Launching Locally
+# Guide 07: Launching
 
-It's time to see your project in action!
+## Pre-launch Checklist
+1. **Migrations**: Ensure all local migrations have been applied to the production database: `npx prisma migrate deploy`.
+2. **Environment Variables**: Configure all required environment variables in your production environment (DATABASE_URL, NEXTAUTH_SECRET, etc.).
+3. **Seeding**: Ensure initial roles and admins are seeded.
+4. **Build**: Run the production build: `npm run build`.
 
-### 1. Run the Development Server
-In your terminal, inside the project folder, run:
+## Launch
+Once built, start the production server:
 ```bash
-npm run dev
+npm run start
 ```
-
-### 2. View the Project
-- Wait for the terminal to show `Ready in...`.
-- Open your web browser and go to:
-  `http://localhost:3000`
-
-### 3. Testing
-- **Sign In:** Try logging in with one of the test accounts:
-  - Admin: `admin@test.com` / `password123`
-  - Student: `student@test.com` / `password123`
-- **Publishing:** If you logged in as Admin/Editor, you will see a "Publish" button.
-- **Explore:** Click through News, Videos, and Journals to verify everything is linked.
-
-If everything works, you are ready to prepare for [Part 8: CMS](08-cms.md).
+Ensure that media uploads are properly configured for the production environment (Catalyst supports local uploads; ensure persistent storage is available if not using an external S3 provider).
