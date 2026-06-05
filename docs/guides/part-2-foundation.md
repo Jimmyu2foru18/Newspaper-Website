@@ -30,4 +30,4 @@ To "code it" yourself:
 5. Save it. You have just created a functional component!
 
 ---
-Now that you understand the structure, we are ready to move on to the more advanced parts. Would you like me to continue writing the detailed "Zero Knowledge" tutorials for **Part 3: Databases**, **Part 4: Auth**, and beyond in the same style?
+Let's move on to [Part 3: database-auth](part-3-database-auth.md) to understand how to put it all together.
