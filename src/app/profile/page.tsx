@@ -4,7 +4,8 @@ import { redirect } from "next/navigation";
 import prisma from "@/lib/prisma";
 import UserTabs from "@/components/admin/UserTabs";
 import CommentModeration from "@/components/admin/CommentModeration";
-import StudentPostForm from "@/components/student/StudentPostForm"; // Need to create this
+import StudentPostForm from "@/components/student/StudentPostForm";
+import Link from "next/link";
 
 export default async function ProfilePage() {
   const session = await getServerSession(authOptions);
@@ -33,11 +34,15 @@ export default async function ProfilePage() {
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-3xl font-bold mb-4">My Profile</h1>
       <div className="bg-white p-6 rounded-lg shadow mb-8">
+        {user.profile?.avatarUrl && (
+            <img src={user.profile.avatarUrl} alt={user.firstName || "Profile"} className="w-24 h-24 rounded-full object-cover mb-4" />
+        )}
         <p><strong>Name:</strong> {user?.firstName} {user?.lastName}</p>
         <p><strong>Email:</strong> {user?.email}</p>
         <p><strong>Roles:</strong> {userRoles.join(", ")}</p>
+        {user.profile?.bio && <p className="mt-2 text-gray-700"><strong>Bio:</strong> {user.profile.bio}</p>}
         <p className="mt-4">
-          <a href={`/profile/${user?.id}`} className="text-primary hover:underline">View Public Profile</a>
+          <Link href="/profile/edit" className="bg-primary text-white px-4 py-2 rounded-md hover:bg-primary/90">Edit Profile</Link>
         </p>
       </div>
 

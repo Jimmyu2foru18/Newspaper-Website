@@ -10,6 +10,7 @@ export default async function PublicProfilePage({ params }: { params: { id: stri
     where: { id: params.id },
     include: { 
         profile: true,
+        roles: { include: { role: true } },
         articles: { where: { published: true } },
         videos: { where: { published: true } },
         papers: { where: { published: true } },
@@ -20,25 +21,21 @@ export default async function PublicProfilePage({ params }: { params: { id: stri
     notFound();
   }
 
+  const userRoles = user.roles.map(r => r.role.name);
   const isOwner = session?.user && (session.user as any).id === user.id;
 
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="bg-white p-6 rounded-lg shadow mb-8 flex items-center gap-6">
         {user.profile?.avatarUrl && (
-            <img src={user.profile.avatarUrl} alt={user.name || "Profile"} className="w-24 h-24 rounded-full object-cover" />
+            <img src={user.profile.avatarUrl} alt={user.firstName || "Profile"} className="w-24 h-24 rounded-full object-cover" />
         )}
         <div className="flex-1">
           <h1 className="text-3xl font-bold">{user.firstName} {user.lastName}</h1>
-          <p className="text-gray-600">Role: {user.role}</p>
-          {user.profile?.bio && <p className="mt-2 text-gray-700">{user.profile.bio}</p>}
+          <p className="text-gray-600"><strong>Email:</strong> {user.email}</p>
+          <p className="text-gray-600"><strong>Role:</strong> {user.roles.map(r => r.role.name).join(", ")}</p>
+          {user.profile?.bio && <p className="mt-2 text-gray-700"><strong>Bio:</strong> {user.profile.bio}</p>}
         </div>
-        {isOwner && (
-          <div className="flex flex-col gap-2">
-            <Link href="/profile/edit" className="bg-primary text-white px-4 py-2 rounded-md">Edit Profile</Link>
-            <Link href="/publish" className="bg-primary/10 text-primary px-4 py-2 rounded-md">Create Post</Link>
-          </div>
-        )}
       </div>
 
       <h2 className="text-2xl font-bold mb-4">Content</h2>
