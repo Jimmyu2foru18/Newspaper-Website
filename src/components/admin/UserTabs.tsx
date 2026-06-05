@@ -1,12 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { Role } from "@prisma/client";
 import UserActions from "@/components/admin/UserActions";
 
 export default function UserTabs({ initialUsers, currentUserRole }: { initialUsers: any[], currentUserRole: string }) {
-  const roles = Object.values(Role);
-  const [activeRole, setActiveRole] = useState<Role>(roles[0]);
+  const roles = ["GUEST", "STUDENT", "STAFF", "FACULTY", "ADMIN", "SUPER_ADMIN"];
+  const [activeRole, setActiveRole] = useState(roles[0]);
 
   const isSuperAdmin = currentUserRole === "SUPER_ADMIN";
   const isAdmin = currentUserRole === "ADMIN";

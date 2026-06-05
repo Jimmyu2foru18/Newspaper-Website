@@ -24,7 +24,7 @@ export default async function ProfilePage() {
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-3xl font-bold mb-4">My Profile</h1>
       <div className="bg-white p-6 rounded-lg shadow mb-8">
-        <p><strong>Name:</strong> {user?.name}</p>
+        <p><strong>Name:</strong> {user?.firstName} {user?.lastName}</p>
         <p><strong>Email:</strong> {user?.email}</p>
         <p><strong>Role:</strong> {user?.role}</p>
         <p className="mt-4">
