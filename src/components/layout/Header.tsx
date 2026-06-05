@@ -44,6 +44,12 @@ export function Header() {
         <div className="flex items-center space-x-4">
           {session ? (
             <div className="flex items-center space-x-4">
+              <Link
+                href="/profile"
+                className="hidden md:flex items-center space-x-2 rounded-md bg-primary text-white px-4 py-2 text-sm font-bold shadow-sm hover:bg-primary/90"
+              >
+                Portal
+              </Link>
               {(session.user as any).role === "ADMIN" || (session.user as any).role === "EDITOR" ? (
                 <Link
                   href="/publish"
@@ -52,13 +58,6 @@ export function Header() {
                   Publish
                 </Link>
               ) : null}
-              <Link
-                href="/profile"
-                className="hidden md:flex items-center space-x-2 text-sm font-medium text-gray-700 hover:text-primary"
-              >
-                <UserIcon className="h-4 w-4" />
-                <span>{session.user?.name}</span>
-              </Link>
               <button
                 onClick={() => signOut()}
                 className="hidden md:flex items-center space-x-2 rounded-md border border-gray-300 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
@@ -70,9 +69,9 @@ export function Header() {
           ) : (
             <Link
               href="/login"
-              className="hidden md:inline-flex h-9 items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-white shadow transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50"
+              className="hidden md:inline-flex h-9 items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-bold text-white shadow transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50"
             >
-              Sign In
+              Portal
             </Link>
           )}
         </div>
