@@ -62,8 +62,9 @@ export default async function ProfilePage() {
         <p><strong>Email:</strong> {user?.email}</p>
         <p><strong>Roles:</strong> {userRoles.join(", ")}</p>
         {user?.profile?.bio && <p className="mt-2 text-gray-700"><strong>Bio:</strong> {user.profile.bio}</p>}
-        <p className="mt-4">
+        <p className="mt-4 flex gap-4">
           <Link href="/profile/edit" className="bg-primary text-white px-4 py-2 rounded-md hover:bg-primary/90">Edit Profile</Link>
+          <Link href={`/profile/${currentUserId}`} className="bg-gray-200 text-gray-800 px-4 py-2 rounded-md hover:bg-gray-300">View as Guest</Link>
         </p>
       </div>
 

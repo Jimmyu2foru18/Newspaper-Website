@@ -4,16 +4,20 @@ import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import Link from "next/link";
 
-export default async function PublicProfilePage({ params }: { params: { id: string } }) {
+export default async function PublicProfilePage({ params }: { params: Promise<{ id: string }> }) {
   const session = await getServerSession(authOptions);
+
+  const { id } = await params;
+
   const user = await prisma.user.findUnique({
-    where: { id: params.id },
+    where: { id },
     include: { 
         profile: true,
         roles: { include: { role: true } },
         articles: { where: { approvalStatus: "APPROVED" } },
         videos: { where: { approvalStatus: "APPROVED" } },
         papers: { where: { approvalStatus: "APPROVED" } },
+        images: { where: { approvalStatus: "APPROVED" } },
     },
   });
 
@@ -32,11 +36,12 @@ export default async function PublicProfilePage({ params }: { params: { id: stri
         )}
         <div className="flex-1">
           <h1 className="text-3xl font-bold">{user.firstName} {user.lastName}</h1>
-          <p className="text-gray-600"><strong>Email:</strong> {user.email}</p>
-          <p className="text-gray-600"><strong>Role:</strong> {user.roles.map(r => r.role.name).join(", ")}</p>
+          {isOwner && <p className="text-gray-600"><strong>Email:</strong> {user.email}</p>}
+          <p className="text-gray-600"><strong>Role:</strong> {userRoles.join(", ")}</p>
           {user.profile?.bio && <p className="mt-2 text-gray-700"><strong>Bio:</strong> {user.profile.bio}</p>}
         </div>
       </div>
+...
 
       <h2 className="text-2xl font-bold mb-4">Content</h2>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
