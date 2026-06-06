@@ -6,7 +6,7 @@ import { canModerate } from "@/lib/moderation";
 
 export async function POST(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -14,8 +14,9 @@ export async function POST(
       return new NextResponse("Unauthorized", { status: 401 });
     }
 
+    const { id } = await params;
     const moderatorRoles = (session.user as any).roles as string[];
-    const commentId = params.id;
+    const commentId = id;
 
     // Fetch comment and user to determine target roles
     const comment = await prisma.comment.findUnique({
