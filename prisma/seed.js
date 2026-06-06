@@ -4,6 +4,16 @@ const bcrypt = require("bcryptjs");
 const prisma = new PrismaClient();
 
 async function main() {
+  // Ensure all roles exist before assigning them to users
+  const roleNames = ["GUEST", "STUDENT", "STAFF", "FACULTY", "ADMIN", "SUPER_ADMIN"];
+  for (const name of roleNames) {
+    await prisma.role.upsert({
+      where: { name },
+      update: {},
+      create: { name },
+    });
+  }
+
   const users = [
     { name: "Super Admin", email: "superadmin@oldwestbury.edu", role: "SUPER_ADMIN" },
     { name: "Staff User", email: "staff@oldwestbury.edu", role: "STAFF" },
