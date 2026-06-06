@@ -4,15 +4,16 @@ import { authOptions } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 import { canManageContent } from "@/lib/permissions";
 
-export async function PATCH(req: Request, { params }: { params: { id: string } }) {
+export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const session = await getServerSession(authOptions);
     if (!session || !session.user) {
       return new NextResponse("Unauthorized", { status: 401 });
     }
 
+    const { id } = await params;
     const video = await prisma.video.findUnique({
-      where: { id: params.id },
+      where: { id },
     });
 
     if (!video) {
@@ -32,7 +33,7 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
     const { title, description, url, thumbnailUrl } = body;
 
     const updatedVideo = await prisma.video.update({
-      where: { id: params.id },
+      where: { id },
       data: {
         title,
         description,
@@ -49,15 +50,16 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
   }
 }
 
-export async function DELETE(req: Request, { params }: { params: { id: string } }) {
+export async function DELETE(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const session = await getServerSession(authOptions);
     if (!session || !session.user) {
       return new NextResponse("Unauthorized", { status: 401 });
     }
 
+    const { id } = await params;
     const video = await prisma.video.findUnique({
-      where: { id: params.id },
+      where: { id },
     });
 
     if (!video) {
@@ -74,7 +76,7 @@ export async function DELETE(req: Request, { params }: { params: { id: string } 
     }
 
     await prisma.video.delete({
-      where: { id: params.id },
+      where: { id },
     });
 
     return new NextResponse("Video deleted", { status: 200 });

@@ -4,15 +4,16 @@ import { authOptions } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 import { canManageContent } from "@/lib/permissions";
 
-export async function PATCH(req: Request, { params }: { params: { id: string } }) {
+export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const session = await getServerSession(authOptions);
     if (!session || !session.user) {
       return new NextResponse("Unauthorized", { status: 401 });
     }
 
+    const { id } = await params;
     const article = await prisma.article.findUnique({
-      where: { id: params.id },
+      where: { id },
     });
 
     if (!article) {
@@ -32,7 +33,7 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
     const { title, content, excerpt, featuredImage } = body;
 
     const updatedArticle = await prisma.article.update({
-      where: { id: params.id },
+      where: { id },
       data: {
         title,
         content,
@@ -49,15 +50,16 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
   }
 }
 
-export async function DELETE(req: Request, { params }: { params: { id: string } }) {
+export async function DELETE(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const session = await getServerSession(authOptions);
     if (!session || !session.user) {
       return new NextResponse("Unauthorized", { status: 401 });
     }
 
+    const { id } = await params;
     const article = await prisma.article.findUnique({
-      where: { id: params.id },
+      where: { id },
     });
 
     if (!article) {
@@ -74,7 +76,7 @@ export async function DELETE(req: Request, { params }: { params: { id: string } 
     }
 
     await prisma.article.delete({
-      where: { id: params.id },
+      where: { id },
     });
 
     return new NextResponse("Article deleted", { status: 200 });

@@ -6,17 +6,18 @@ import { canManageUser, getHighestRole, ROLE_HIERARCHY } from "@/lib/permissions
 
 export async function DELETE(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
     if (!session) return new NextResponse("Unauthorized", { status: 401 });
 
+    const { id } = await params;
     const actorId = (session.user as any).id;
     const actorRoles = (session.user as any).roles;
     
     const targetUser = await prisma.user.findUnique({ 
-        where: { id: params.id },
+        where: { id },
         include: { roles: { include: { role: true } } }
     });
     
@@ -28,7 +29,7 @@ export async function DELETE(
       return new NextResponse("Forbidden", { status: 403 });
     }
 
-    await prisma.user.delete({ where: { id: params.id } });
+    await prisma.user.delete({ where: { id } });
 
     return new NextResponse("User deleted successfully", { status: 200 });
   } catch (error) {
@@ -38,14 +39,15 @@ export async function DELETE(
 
 export async function PATCH(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
     if (!session) return new NextResponse("Unauthorized", { status: 401 });
 
+    const { id } = await params;
     const targetUser = await prisma.user.findUnique({ 
-        where: { id: params.id },
+        where: { id },
         include: { roles: { include: { role: true } } }
     });
     
@@ -67,7 +69,7 @@ export async function PATCH(
 
     if (Object.keys(updateData).length > 0) {
         await prisma.user.update({
-            where: { id: params.id },
+            where: { id },
             data: updateData
         });
     }
@@ -85,9 +87,9 @@ export async function PATCH(
         }
 
         const roles = await prisma.role.findMany({ where: { name: { in: roleNames } } });
-        await prisma.userRole.deleteMany({ where: { userId: params.id } });
+        await prisma.userRole.deleteMany({ where: { userId: id } });
         await prisma.userRole.createMany({
-            data: roles.map(r => ({ userId: params.id, roleId: r.id }))
+            data: roles.map(r => ({ userId: id, roleId: r.id }))
         });
     }
 
