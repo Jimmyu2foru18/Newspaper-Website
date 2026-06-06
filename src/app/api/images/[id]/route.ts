@@ -4,15 +4,16 @@ import { authOptions } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 import { canManageContent } from "@/lib/permissions";
 
-export async function PATCH(req: Request, { params }: { params: { id: string } }) {
+export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const session = await getServerSession(authOptions);
     if (!session || !session.user) {
       return new NextResponse("Unauthorized", { status: 401 });
     }
 
+    const { id } = await params;
     const image = await prisma.image.findUnique({
-      where: { id: params.id },
+      where: { id },
     });
 
     if (!image) {
@@ -32,7 +33,7 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
     const { title, description, url } = body;
 
     const updatedImage = await prisma.image.update({
-      where: { id: params.id },
+      where: { id },
       data: {
         title,
         description,
@@ -48,15 +49,16 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
   }
 }
 
-export async function DELETE(req: Request, { params }: { params: { id: string } }) {
+export async function DELETE(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const session = await getServerSession(authOptions);
     if (!session || !session.user) {
       return new NextResponse("Unauthorized", { status: 401 });
     }
 
+    const { id } = await params;
     const image = await prisma.image.findUnique({
-      where: { id: params.id },
+      where: { id },
     });
 
     if (!image) {
@@ -73,7 +75,7 @@ export async function DELETE(req: Request, { params }: { params: { id: string } 
     }
 
     await prisma.image.delete({
-      where: { id: params.id },
+      where: { id },
     });
 
     return new NextResponse("Image deleted", { status: 200 });
