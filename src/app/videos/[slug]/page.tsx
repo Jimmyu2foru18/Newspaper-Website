@@ -5,13 +5,13 @@ import { CommentSection } from "@/components/engagement/CommentSection";
 import { User as UserIcon, Calendar } from "lucide-react";
 
 interface VideoPageProps {
-  params: {
+  params: Promise<{
     slug: string;
-  };
+  }>;
 }
 
 export default async function VideoPage({ params }: VideoPageProps) {
-  const { slug } = params;
+  const { slug } = await params;
 
   const video = await prisma.video.findUnique({
     where: { slug },

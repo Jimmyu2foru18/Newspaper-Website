@@ -4,13 +4,13 @@ import { format } from "date-fns";
 import { CommentSection } from "@/components/engagement/CommentSection";
 
 interface ArticlePageProps {
-  params: {
+  params: Promise<{
     slug: string;
-  };
+  }>;
 }
 
 export default async function ArticlePage({ params }: ArticlePageProps) {
-  const { slug } = params;
+  const { slug } = await params;
 
   const article = await prisma.article.findUnique({
     where: { slug },
@@ -42,7 +42,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
         </h1>
         <div className="flex items-center justify-center gap-3">
           <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold">
-            {article.author.name?.charAt(0)}
+            {article.author.firstName?.charAt(0)}
           </div>
           <div className="text-left">
             <p className="text-sm font-bold text-gray-900">{article.author.firstName} {article.author.lastName}</p>

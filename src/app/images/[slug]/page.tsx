@@ -6,10 +6,12 @@ import { CommentSection } from "@/components/engagement/CommentSection";
 import { ChevronLeft, User as UserIcon, Calendar, Tag } from "lucide-react";
 import Link from "next/link";
 
-export default async function ImageDetailPage({ params }: { params: { slug: string } }) {
+export default async function ImageDetailPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+  
   const image = (prisma as any).image 
     ? await (prisma as any).image.findUnique({
-        where: { slug: params.slug },
+        where: { slug },
         include: {
           author: true,
           category: true,
@@ -89,8 +91,6 @@ export default async function ImageDetailPage({ params }: { params: { slug: stri
                     <span className="font-medium text-primary bg-primary/5 px-2 py-0.5 rounded">{image.category.name}</span>
                 </div>
             </div>
-
-            {/* Recommendations or similar could go here */}
         </div>
       </div>
     </div>
