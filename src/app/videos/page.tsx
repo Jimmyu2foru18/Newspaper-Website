@@ -9,7 +9,8 @@ import { canCreateContent } from "@/lib/permissions";
 export default async function VideosPage() {
   const session = await getServerSession(authOptions);
   const userRoles = (session?.user as any)?.roles || [];
-  const canPublish = canCreateContent(userRoles, "Video");
+  const currentUserId = (session?.user as any)?.id || "";
+  const canPublish = session && canCreateContent(userRoles, "Video");
 
   const videos = await prisma.video.findMany({
     where: {

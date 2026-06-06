@@ -9,7 +9,7 @@ export default async function NewsPage() {
   const session = await getServerSession(authOptions);
   const userRoles = (session?.user as any)?.roles || [];
   const currentUserId = (session?.user as any)?.id || "";
-  const canPublish = userRoles.some((r: string) => ["ADMIN", "SUPER_ADMIN", "FACULTY", "STAFF"].includes(r));
+  const canPublish = session && userRoles.some((r: string) => ["ADMIN", "SUPER_ADMIN", "FACULTY", "STAFF"].includes(r));
 
   const articles = await prisma.article.findMany({
     where: {

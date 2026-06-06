@@ -20,17 +20,18 @@ export default function ContentActions({
   authorId,
   contentType,
   currentUserId,
-  currentUserRoles,
+  currentUserRoles = [], // Default to empty array
   slug,
 }: ContentActionsProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
 
+  // If not logged in, roles will be empty, level will be 0 (GUEST)
   const highest = getHighestRole(currentUserRoles);
   const level = ROLE_HIERARCHY[highest] || 0;
 
   // Only allow STAFF and above to see these actions
-  if (level < ROLE_HIERARCHY.STAFF) return null;
+  if (!currentUserId || level < ROLE_HIERARCHY.STAFF) return null;
 
   const canEdit = canManageContent(
     { id: currentUserId, roles: currentUserRoles },

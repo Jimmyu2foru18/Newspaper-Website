@@ -11,7 +11,7 @@ export default async function JournalsPage() {
   const session = await getServerSession(authOptions);
   const userRoles = (session?.user as any)?.roles || [];
   const currentUserId = (session?.user as any)?.id || "";
-  const canPublish = canCreateContent(userRoles, "ResearchPaper");
+  const canPublish = session && canCreateContent(userRoles, "ResearchPaper");
 
   const papers = await prisma.researchPaper.findMany({
     where: {
